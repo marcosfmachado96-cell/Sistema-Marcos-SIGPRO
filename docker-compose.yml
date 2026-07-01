@@ -1,0 +1,33 @@
+# Deploy de serviço único (app servindo API + SPA) + PostgreSQL.
+# Armazenamento de anexos (S3/R2) e e-mail (Gmail) são externos — ver .env.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medicao
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-medicao}
+      POSTGRES_DB: medicao_der_pr
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicao -d medicao_der_pr"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Sobrepõe o DATABASE_URL do .env para apontar ao serviço "db".
+      DATABASE_URL: postgresql://medicao:${DB_PASSWORD:-medicao}@db:5432/medicao_der_pr?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

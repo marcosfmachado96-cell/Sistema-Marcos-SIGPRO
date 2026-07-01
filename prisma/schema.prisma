@@ -1,0 +1,334 @@
+// Modelo de dados — Sistema de Gestão de Medições (CO 036/2022 DOP — DER/PR)
+// Banco relacional PostgreSQL. Toda transição de estado é auditada.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Perfis e estados (enums)
+// ----------------------------------------------------------------------------
+
+enum Perfil {
+  COORDENADOR
+  USUARIO
+}
+
+enum StatusConvite {
+  PENDENTE
+  ACEITO
+  EXPIRADO
+  REVOGADO
+}
+
+// Estados da máquina de estados do relatório de medição.
+enum EstadoRelatorio {
+  ENVIADO
+  EM_ANALISE
+  REPROVADO
+  APROVADO
+  AGUARDANDO_ATESTO
+  CORRECAO_DOCUMENTAL
+  CONCLUIDO
+}
+
+// Categoria do anexo — aplica tecnicamente as regras de permissão de upload.
+enum CategoriaAnexo {
+  MEDICAO            // anexos do relatório de medição
+  DOC_FISCAL         // documentação fiscal (só com relatório APROVADO)
+  ATESTO             // atesto contábil (só inserido pelo coordenador)
+  RELATORIO_ASSINADO // relatório assinado pelo coordenador (anexado na aprovação)
+}
+
+enum TipoObservacao {
+  REPROVACAO_MEDICAO   // observações ao reprovar a medição
+  CORRECAO_DOCUMENTAL  // observações ao solicitar correção de documentos
+}
+
+enum OrigemObservacao {
+  COORDENADOR
+  IA
+}
+
+// Declaração do colaborador sobre cada observação.
+enum StatusColaborador {
+  PENDENTE
+  ATENDIDO
+  NAO_ATENDIDO
+}
+
+// Confirmação do coordenador sobre o que o colaborador declarou.
+enum ConfirmacaoCoordenador {
+  PENDENTE
+  CONFIRMADO
+  REABERTO
+}
+
+// ----------------------------------------------------------------------------
+// Usuários e convites
+// ----------------------------------------------------------------------------
+
+model Usuario {
+  id          String   @id @default(uuid())
+  nome        String
+  email       String   @unique
+  senhaHash   String?  // nulo até o aceite do convite (definição de senha)
+  perfil      Perfil   @default(USUARIO)
+  contratada  String?  // empresa/contratada do colaborador
+  ativo       Boolean  @default(true)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  relatorios       Relatorio[]   @relation("AutorRelatorio")
+  relatoriosExcluidos Relatorio[] @relation("ExcluiuRelatorio")
+  convitesEnviados Convite[]     @relation("ConvitePor")
+  observacoes      Observacao[]
+  atestos          Atesto[]
+  anexosEnviados   Anexo[]       @relation("AnexoPor")
+  solicitacoes     Solicitacao[] @relation("AutorSolicitacao")
+  solicitacoesRespondidas Solicitacao[] @relation("RespondeuSolicitacao")
+  logs             LogAuditoria[]
+
+  @@map("usuarios")
+}
+
+model Convite {
+  id          String        @id @default(uuid())
+  email       String
+  token       String        @unique
+  perfil      Perfil        @default(USUARIO)
+  contratada  String?
+  status      StatusConvite @default(PENDENTE)
+  expiraEm    DateTime
+  criadoEm    DateTime      @default(now())
+
+  convidadoPorId String
+  convidadoPor   Usuario @relation("ConvitePor", fields: [convidadoPorId], references: [id])
+
+  @@index([email])
+  @@map("convites")
+}
+
+// ----------------------------------------------------------------------------
+// Relatório de medição e seu histórico de versões
+// ----------------------------------------------------------------------------
+
+model Relatorio {
+  id            String          @id @default(uuid())
+  autorId       String
+  autor         Usuario         @relation("AutorRelatorio", fields: [autorId], references: [id])
+
+  numMedicao    String
+  periodoInicio DateTime
+  periodoFim    DateTime
+  contrato      String
+  objeto        String
+  valor         Decimal         @db.Decimal(15, 2)
+
+  estado        EstadoRelatorio @default(ENVIADO)
+  versaoAtual   Int             @default(1)
+
+  // Exclusão lógica (registro e histórico preservados para recuperação).
+  excluidoEm    DateTime?
+  excluidoPorId String?
+  excluidoPor   Usuario?        @relation("ExcluiuRelatorio", fields: [excluidoPorId], references: [id])
+
+  criadoEm      DateTime        @default(now())
+  atualizadoEm  DateTime        @updatedAt
+
+  versoes     RelatorioVersao[]
+  observacoes Observacao[]
+  anexos      Anexo[]
+  atesto      Atesto?
+  analises    AnaliseIA[]
+  logs        LogAuditoria[]
+
+  @@index([estado])
+  @@index([autorId])
+  @@map("relatorios")
+}
+
+// Snapshot imutável de cada versão. Versões reprovadas NÃO são sobrescritas.
+model RelatorioVersao {
+  id            String   @id @default(uuid())
+  relatorioId   String
+  relatorio     Relatorio @relation(fields: [relatorioId], references: [id])
+
+  numeroVersao  Int
+  numMedicao    String
+  periodoInicio DateTime
+  periodoFim    DateTime
+  contrato      String
+  objeto        String
+  valor         Decimal  @db.Decimal(15, 2)
+  criadoEm      DateTime @default(now())
+
+  anexos      Anexo[]
+  observacoes Observacao[]
+
+  @@unique([relatorioId, numeroVersao])
+  @@map("relatorio_versoes")
+}
+
+// ----------------------------------------------------------------------------
+// Observações de reprovação / correção documental
+// ----------------------------------------------------------------------------
+
+model Observacao {
+  id          String         @id @default(uuid())
+  relatorioId String
+  relatorio   Relatorio      @relation(fields: [relatorioId], references: [id])
+  versaoId    String?
+  versao      RelatorioVersao? @relation(fields: [versaoId], references: [id])
+
+  autorId     String         // coordenador que registrou
+  autor       Usuario        @relation(fields: [autorId], references: [id])
+  tipo        TipoObservacao
+  origem      OrigemObservacao @default(COORDENADOR)
+  numero      Int            @default(0) // numeração sequencial por relatório
+  rodada      Int            @default(1)
+  texto       String
+
+  // Fluxo: colaborador declara, coordenador confirma.
+  statusColaborador StatusColaborador      @default(PENDENTE)
+  declaracao        String?                // comentário do colaborador
+  confirmacao       ConfirmacaoCoordenador @default(PENDENTE)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @default(now()) @updatedAt
+
+  @@map("observacoes")
+}
+
+// ----------------------------------------------------------------------------
+// Anexos (medição, documentação fiscal e atesto) — armazenados em S3
+// ----------------------------------------------------------------------------
+
+model Anexo {
+  id           String         @id @default(uuid())
+  relatorioId  String
+  relatorio    Relatorio      @relation(fields: [relatorioId], references: [id])
+  versaoId     String?
+  versao       RelatorioVersao? @relation(fields: [versaoId], references: [id])
+
+  categoria    CategoriaAnexo
+  nomeArquivo  String
+  chaveS3      String         // caminho do objeto no bucket
+  tamanho      Int
+  contentType  String
+  enviadoPorId String
+  enviadoPor   Usuario        @relation("AnexoPor", fields: [enviadoPorId], references: [id])
+  criadoEm     DateTime       @default(now())
+
+  @@index([relatorioId, categoria])
+  @@map("anexos")
+}
+
+// ----------------------------------------------------------------------------
+// Atesto contábil
+// ----------------------------------------------------------------------------
+
+model Atesto {
+  id            String   @id @default(uuid())
+  relatorioId   String   @unique
+  relatorio     Relatorio @relation(fields: [relatorioId], references: [id])
+  coordenadorId String
+  coordenador   Usuario  @relation(fields: [coordenadorId], references: [id])
+  anexoId       String?  // referência ao arquivo do atesto, se houver
+  observacoes   String?
+  criadoEm      DateTime @default(now())
+
+  @@map("atestos")
+}
+
+// ----------------------------------------------------------------------------
+// Análise por IA do relatório de medição
+// ----------------------------------------------------------------------------
+
+model AnaliseIA {
+  id              String   @id @default(uuid())
+  relatorioId     String
+  relatorio       Relatorio @relation(fields: [relatorioId], references: [id])
+  versaoAnalisada Int
+  modelo          String?  // modelo usado, ou "simulacao" quando sem API
+  resumo          String?  // sumário textual da análise
+  criadoEm        DateTime @default(now())
+
+  itens AnaliseIAItem[]
+
+  @@map("analises_ia")
+}
+
+model AnaliseIAItem {
+  id         String   @id @default(uuid())
+  analiseId  String
+  analise    AnaliseIA @relation(fields: [analiseId], references: [id])
+  numero     Int
+  texto      String
+  severidade String?  // baixa | media | alta
+  // Decisão do coordenador: null = pendente, true = aceito, false = rejeitado.
+  aceito     Boolean?
+
+  @@map("analise_ia_itens")
+}
+
+// Diretrizes acumuladas para "aprendizado por contexto": erros confirmados pelo
+// coordenador e sugestões rejeitadas, injetados no prompt das próximas análises.
+model AprendizadoIA {
+  id       String   @id @default(uuid())
+  diretriz String
+  origem   String?  // observacao_confirmada | ia_rejeitada | manual
+  criadoEm DateTime @default(now())
+
+  @@map("aprendizado_ia")
+}
+
+// ----------------------------------------------------------------------------
+// Solicitações gerais (colaborador abre; coordenador responde)
+// ----------------------------------------------------------------------------
+
+enum StatusSolicitacao {
+  ABERTA
+  EM_ANDAMENTO
+  RESOLVIDA
+}
+
+model Solicitacao {
+  id        String   @id @default(uuid())
+  autorId   String
+  autor     Usuario  @relation("AutorSolicitacao", fields: [autorId], references: [id])
+  titulo    String
+  descricao String
+  status    StatusSolicitacao @default(ABERTA)
+  resposta  String?
+  respondidoPorId String?
+  respondidoPor   Usuario? @relation("RespondeuSolicitacao", fields: [respondidoPorId], references: [id])
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @default(now()) @updatedAt
+
+  @@index([autorId])
+  @@index([status])
+  @@map("solicitacoes")
+}
+
+model LogAuditoria {
+  id          String          @id @default(uuid())
+  relatorioId String?
+  relatorio   Relatorio?      @relation(fields: [relatorioId], references: [id])
+  atorId      String
+  ator        Usuario         @relation(fields: [atorId], references: [id])
+
+  acao        String          // ex.: "CRIAR_RELATORIO", "APROVAR", "REPROVAR"
+  estadoDe    EstadoRelatorio?
+  estadoPara  EstadoRelatorio?
+  detalhe     Json?
+  criadoEm    DateTime        @default(now())
+
+  @@index([relatorioId])
+  @@map("log_auditoria")
+}
