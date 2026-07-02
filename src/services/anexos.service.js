@@ -34,8 +34,8 @@ function limparNome(s) {
     .replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-// Nome padronizado: <Tipo>_Med<numMedicao>_Contr<contrato>[_n].<ext>
-function nomePadronizado(categoria, relatorio, original, indice) {
+// Nome padronizado: <Tipo>_Med<numMedicao>_Contr<contrato>[_REVNN][_n].<ext>
+function nomePadronizado(categoria, relatorio, original, indice, revisao) {
   const m = String(original || '').match(/\.[^.]+$/);
   const ext = m ? m[0].toLowerCase() : '';
   const prefixo = {
@@ -45,20 +45,37 @@ function nomePadronizado(categoria, relatorio, original, indice) {
     RELATORIO_ASSINADO: 'RelatorioAssinado',
   }[categoria] || 'Documento';
   const base = [prefixo, `Med${limparNome(relatorio?.numMedicao)}`, `Contr${limparNome(relatorio?.contrato)}`].join('_');
+  const rev = revisao > 0 ? `_REV${String(revisao).padStart(2, '0')}` : '';
   const sufixo = indice && indice > 0 ? `_${indice + 1}` : '';
-  return `${base}${sufixo}${ext}`;
+  return `${base}${rev}${sufixo}${ext}`;
+}
+
+// Nº da revisão para o sufixo REVNN do nome do arquivo:
+//  - MEDICAO: acompanha a versão do relatório (reenvio após reprovação).
+//  - DOC_FISCAL: conta quantas vezes a documentação fiscal já foi enviada
+//    (1ª vez sem sufixo; a partir da 2ª, REV01, REV02...).
+//  - demais categorias (ATESTO, RELATORIO_ASSINADO): não se repetem, sem sufixo.
+async function calcularRevisao(relatorioId, categoria, relatorio) {
+  if (categoria === 'MEDICAO') return Math.max(0, relatorio.versaoAtual - 1);
+  if (categoria === 'DOC_FISCAL') {
+    return prisma.logAuditoria.count({
+      where: { relatorioId, acao: { in: ['ANEXAR_DOC_FISCAL', 'REENVIAR_DOCUMENTOS'] } },
+    });
+  }
+  return 0;
 }
 
 // Envia os arquivos ao storage e devolve os metadados (sem buffer).
-// O nome exibido/baixado é padronizado por tipo, número da medição e contrato.
+// O nome exibido/baixado é padronizado por tipo, número da medição, contrato e revisão.
 async function persistir(relatorioId, categoria, arquivos, versaoId, atorId) {
   const relatorio = await prisma.relatorio.findUnique({
-    where: { id: relatorioId }, select: { numMedicao: true, contrato: true },
+    where: { id: relatorioId }, select: { numMedicao: true, contrato: true, versaoAtual: true },
   });
+  const revisao = await calcularRevisao(relatorioId, categoria, relatorio);
   const registros = [];
   let i = 0;
   for (const f of arquivos) {
-    const nome = nomePadronizado(categoria, relatorio, f.originalname, arquivos.length > 1 ? i : null);
+    const nome = nomePadronizado(categoria, relatorio, f.originalname, arquivos.length > 1 ? i : null, revisao);
     const chave = storage.montarChave(relatorioId, categoria, nome);
     await storage.enviarObjeto({ chave, buffer: f.buffer, contentType: f.mimetype });
     registros.push({
