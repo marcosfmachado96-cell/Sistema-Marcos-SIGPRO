@@ -14,7 +14,7 @@ const storage = require('./storage');
 const env = require('../config/env');
 
 const fmtMoeda = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtData = (d) => new Date(d).toLocaleDateString('pt-BR');
+const fmtData = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
 // Extrai o texto dos anexos de MEDIÇÃO em PDF (limitado para caber no prompt).
 async function extrairTextoRelatorio(relatorioId) {

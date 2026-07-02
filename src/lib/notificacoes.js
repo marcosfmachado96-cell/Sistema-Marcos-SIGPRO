@@ -11,8 +11,10 @@
 const mailer = require('./mailer');
 const env = require('../config/env');
 
+// Datas puras (período da medição) são gravadas como meia-noite UTC — exibir
+// em UTC evita depender do fuso do servidor para mostrar a data certa.
 function fmtData(d) {
-  try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return String(d); }
+  try { return new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }); } catch { return String(d); }
 }
 function fmtValor(v) {
   const n = Number(v);
