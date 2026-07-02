@@ -1,7 +1,8 @@
 // Templates e disparos de notificação por e-mail.
-// As notificações ligadas às ações da Etapa 4 (documentação fiscal e atesto)
-// estão acionadas. As demais (aprovado/reprovado/novo relatório) ficam prontas
-// para a Etapa 6.
+//
+// Por decisão do coordenador, transições de fase não disparam e-mail para
+// coordenador nem colaborador — só o aviso ao financeiro (fora desse par)
+// permanece automático, pois é isso que destrava o atesto contábil.
 //
 // Decisão: o e-mail ao financeiro leva LINKS de download assinados (não os
 // arquivos anexados). Isso evita os limites de tamanho e o risco de spam ao
@@ -33,7 +34,7 @@ function listaLinks(links) {
   return `<ul>${itens}</ul>`;
 }
 
-// Etapa 4 — automático ao incluir documentação fiscal. links = [{nome, url}]
+// Automático ao incluir documentação fiscal. links = [{nome, url}]
 async function financeiroSolicitaAtesto({ relatorio, autor, links, replyTo }) {
   return mailer.enviar({
     para: env.email.financeiro,
@@ -47,66 +48,6 @@ async function financeiroSolicitaAtesto({ relatorio, autor, links, replyTo }) {
   });
 }
 
-// Etapa 4 — coordenador avisado da inclusão de documentação fiscal.
-async function coordenadorDocFiscal({ coordenadorEmail, relatorio, autor }) {
-  if (!coordenadorEmail) return;
-  return mailer.enviar({
-    para: coordenadorEmail,
-    assunto: `Documentação fiscal incluída — Medição ${relatorio.numMedicao}`,
-    html: `<p>A documentação fiscal foi incluída e o relatório aguarda atesto.</p>
-      ${blocoMedicao(relatorio, autor)}`,
-  });
-}
-
-// Etapa 4 — usuário avisado de que o atesto está disponível (conclusão).
-async function usuarioConcluido({ usuarioEmail, relatorio }) {
-  if (!usuarioEmail) return;
-  return mailer.enviar({
-    para: usuarioEmail,
-    assunto: `Atesto contábil disponível — Medição ${relatorio.numMedicao}`,
-    html: `<p>O atesto contábil da medição ${relatorio.numMedicao} foi emitido e já está
-      disponível no sistema. O processo foi concluído.</p>`,
-  });
-}
-
-// Usuário avisado de que precisa corrigir a documentação contábil.
-async function usuarioCorrecaoDocumental({ usuarioEmail, relatorio, observacao }) {
-  if (!usuarioEmail) return;
-  return mailer.enviar({
-    para: usuarioEmail,
-    assunto: `Correção documental — Medição ${relatorio.numMedicao}`,
-    html: `<p>A documentação contábil da medição ${relatorio.numMedicao} precisa de ajustes.
-      Observações do coordenador:</p>
-      <blockquote>${observacao || ''}</blockquote>
-      <p>Reenvie os documentos corrigidos pelo sistema.</p>`,
-  });
-}
-
-async function usuarioAprovado({ usuarioEmail, relatorio }) {
-  if (!usuarioEmail) return;
-  return mailer.enviar({
-    para: usuarioEmail,
-    assunto: `Medição ${relatorio.numMedicao} aprovada`,
-    html: `<p>Sua medição ${relatorio.numMedicao} foi aprovada. Você já pode incluir a
-      documentação fiscal no sistema.</p>`,
-  });
-}
-async function usuarioReprovado({ usuarioEmail, relatorio, observacao }) {
-  if (!usuarioEmail) return;
-  return mailer.enviar({
-    para: usuarioEmail,
-    assunto: `Medição ${relatorio.numMedicao} reprovada — correções necessárias`,
-    html: `<p>Sua medição ${relatorio.numMedicao} foi reprovada. Observações do coordenador:</p>
-      <blockquote>${observacao || ''}</blockquote>
-      <p>Ajuste o relatório e reenvie pelo sistema.</p>`,
-  });
-}
-
 module.exports = {
   financeiroSolicitaAtesto,
-  coordenadorDocFiscal,
-  usuarioConcluido,
-  usuarioAprovado,
-  usuarioReprovado,
-  usuarioCorrecaoDocumental,
 };

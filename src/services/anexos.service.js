@@ -153,7 +153,7 @@ async function incluirDocumentacaoFiscal(id, arquivos, ator) {
     return { atualizado: up, anexosCriados: criados };
   });
 
-  // Notificações (best-effort; falha de e-mail não desfaz a transição).
+  // E-mail ao financeiro (best-effort; falha de e-mail não desfaz a transição).
   try {
     const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
     const links = [];
@@ -164,8 +164,6 @@ async function incluirDocumentacaoFiscal(id, arquivos, ator) {
     await notificacoes.financeiroSolicitaAtesto({
       relatorio: atualizado, autor, links, replyTo: env.email.replyTo || undefined,
     });
-    const coord = await prisma.usuario.findFirst({ where: { perfil: 'COORDENADOR', ativo: true } });
-    await notificacoes.coordenadorDocFiscal({ coordenadorEmail: coord?.email, relatorio: atualizado, autor });
   } catch (e) {
     console.error('Falha ao notificar inclusão de documentação fiscal:', e.message);
   }
@@ -202,13 +200,6 @@ async function registrarAtesto(id, arquivo, observacoes, ator) {
     });
     return up;
   });
-
-  try {
-    const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
-    await notificacoes.usuarioConcluido({ usuarioEmail: autor?.email, relatorio: atualizado });
-  } catch (e) {
-    console.error('Falha ao notificar conclusão:', e.message);
-  }
 
   return atualizado;
 }
@@ -248,11 +239,6 @@ async function aprovarComAssinatura(id, arquivo, ator) {
     });
     return up;
   });
-
-  try {
-    const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
-    await notificacoes.usuarioAprovado({ usuarioEmail: autor?.email, relatorio: atualizado });
-  } catch (e) { console.error('Falha ao notificar aprovação:', e.message); }
 
   return atualizado;
 }

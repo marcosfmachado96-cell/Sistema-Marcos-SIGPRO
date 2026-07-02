@@ -9,7 +9,7 @@ import { fmtMoeda, fmtPeriodo, fmtDataHora } from '../util';
 export function DetalheRelatorio() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { ehCoordenador, usuario } = useAuth();
+  const { ehCoordenador } = useAuth();
 
   const [rel, setRel] = useState(null);
   const [hist, setHist] = useState([]);
@@ -42,7 +42,7 @@ export function DetalheRelatorio() {
   if (erro) return <div className="alerta alerta-erro">{erro}</div>;
   if (!rel) return <div className="carregando">Carregando relatório…</div>;
 
-  const podeExcluir = ehCoordenador || rel.autor?.email === usuario?.email || rel.autorId === usuario?.id;
+  const podeExcluir = ehCoordenador;
   const anexosPorCat = (cat) => (rel.anexos || []).filter((a) => a.categoria === cat);
 
   // Data em que cada etapa da trilha foi atingida (a partir do histórico).

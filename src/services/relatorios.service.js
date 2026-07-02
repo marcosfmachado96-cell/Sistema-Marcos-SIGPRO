@@ -4,7 +4,6 @@
 
 const prisma = require('../lib/prisma');
 const audit = require('../lib/audit');
-const notificacoes = require('../lib/notificacoes');
 const ia = require('../lib/ia');
 const sm = require('../domain/stateMachine');
 const { ESTADOS, ACOES, resolverTransicao } = sm;
@@ -149,21 +148,6 @@ async function executarTransicao(id, acao, ator, payload = {}) {
 
     return r;
   });
-
-  // Notifica o autor conforme a decisão (best-effort, após o commit).
-  try {
-    const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
-    const usuarioEmail = autor?.email;
-    if (acao === ACOES.APROVAR) {
-      await notificacoes.usuarioAprovado({ usuarioEmail, relatorio: atualizado });
-    } else if (acao === ACOES.REPROVAR) {
-      await notificacoes.usuarioReprovado({ usuarioEmail, relatorio: atualizado, observacao: payload.texto });
-    } else if (acao === ACOES.SOLICITAR_CORRECAO_DOCUMENTAL) {
-      await notificacoes.usuarioCorrecaoDocumental({ usuarioEmail, relatorio: atualizado, observacao: payload.texto });
-    }
-  } catch (e) {
-    console.error('Falha ao notificar autor:', e.message);
-  }
 
   return atualizado;
 }
@@ -313,16 +297,6 @@ async function criarObservacoesETransicionar(id, itens, ator, acao, tipo) {
     return r;
   });
 
-  try {
-    const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
-    const texto = validos.map((v, i) => `${i + 1}. ${v.texto}`).join('\n');
-    if (acao === ACOES.REPROVAR) {
-      await notificacoes.usuarioReprovado({ usuarioEmail: autor?.email, relatorio: atualizado, observacao: texto });
-    } else {
-      await notificacoes.usuarioCorrecaoDocumental({ usuarioEmail: autor?.email, relatorio: atualizado, observacao: texto });
-    }
-  } catch (e) { console.error('Falha ao notificar:', e.message); }
-
   return atualizado;
 }
 
@@ -397,8 +371,8 @@ async function confirmarObservacoes(id, itens, ator) {
 
 async function excluir(id, ator) {
   const relatorio = await obterRelatorio(id);
-  if (ator.perfil !== 'COORDENADOR' && relatorio.autorId !== ator.id) {
-    const e = new Error('Sem permissão para excluir este relatório.'); e.status = 403; throw e;
+  if (ator.perfil !== 'COORDENADOR') {
+    const e = new Error('Apenas o coordenador pode excluir relatórios.'); e.status = 403; throw e;
   }
   if (relatorio.excluidoEm) return relatorio; // já excluído
   return prisma.$transaction(async (tx) => {
