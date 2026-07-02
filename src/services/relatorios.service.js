@@ -9,16 +9,6 @@ const ia = require('../lib/ia');
 const sm = require('../domain/stateMachine');
 const { ESTADOS, ACOES, resolverTransicao } = sm;
 
-// Notifica todos os coordenadores ativos (best-effort).
-async function notificarCoordenadores(fn) {
-  try {
-    const coords = await prisma.usuario.findMany({ where: { perfil: 'COORDENADOR', ativo: true } });
-    for (const c of coords) await fn(c.email);
-  } catch (e) {
-    console.error('Falha ao notificar coordenadores:', e.message);
-  }
-}
-
 // ----------------------------------------------------------------------------
 // Helpers
 // ----------------------------------------------------------------------------
@@ -106,12 +96,6 @@ async function criar(dados, ator) {
 
     return atualizado;
   });
-
-  // Notifica os coordenadores: novo relatório para análise.
-  const autor = await prisma.usuario.findUnique({ where: { id: ator.id } });
-  await notificarCoordenadores((email) =>
-    notificacoes.coordenadorNovoRelatorio({ coordenadorEmail: email, relatorio: criado, autor })
-  );
 
   return criado;
 }
@@ -226,12 +210,6 @@ async function reenviar(id, dados, ator) {
 
     return r;
   });
-
-  // Notifica os coordenadores: relatório reenviado para análise.
-  const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
-  await notificarCoordenadores((email) =>
-    notificacoes.coordenadorNovoRelatorio({ coordenadorEmail: email, relatorio: atualizado, autor, reenvio: true })
-  );
 
   return atualizado;
 }

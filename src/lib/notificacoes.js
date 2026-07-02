@@ -69,17 +69,6 @@ async function usuarioConcluido({ usuarioEmail, relatorio }) {
   });
 }
 
-// Coordenador avisado de novo relatório (ou reenvio) aguardando análise.
-async function coordenadorNovoRelatorio({ coordenadorEmail, relatorio, autor, reenvio }) {
-  if (!coordenadorEmail) return;
-  return mailer.enviar({
-    para: coordenadorEmail,
-    assunto: `${reenvio ? 'Relatório reenviado' : 'Novo relatório'} para análise — Medição ${relatorio.numMedicao}`,
-    html: `<p>${reenvio ? 'Um relatório foi reenviado' : 'Um novo relatório foi cadastrado'} e aguarda sua análise.</p>
-      ${blocoMedicao(relatorio, autor)}`,
-  });
-}
-
 // Usuário avisado de que precisa corrigir a documentação contábil.
 async function usuarioCorrecaoDocumental({ usuarioEmail, relatorio, observacao }) {
   if (!usuarioEmail) return;
@@ -116,7 +105,6 @@ async function usuarioReprovado({ usuarioEmail, relatorio, observacao }) {
 module.exports = {
   financeiroSolicitaAtesto,
   coordenadorDocFiscal,
-  coordenadorNovoRelatorio,
   usuarioConcluido,
   usuarioAprovado,
   usuarioReprovado,
