@@ -2,6 +2,7 @@
 const { Router } = require('express');
 const { autenticar, exigirPerfil } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { uploadDocFiscal } = upload;
 const { auth, convites } = require('../controllers/auth.controller');
 const relatorios = require('../controllers/relatorios.controller');
 const anexos = require('../controllers/anexos.controller');
@@ -48,7 +49,7 @@ router.patch('/solicitacoes/:id', autenticar, exigirPerfil('COORDENADOR'), solic
 
 // --- Anexos ---
 router.post('/relatorios/:id/anexos', autenticar, exigirPerfil('USUARIO'), upload.array('arquivos'), anexos.anexarMedicao);
-router.post('/relatorios/:id/documentacao-fiscal', autenticar, exigirPerfil('USUARIO'), upload.array('arquivos'), anexos.incluirDocumentacaoFiscal);
+router.post('/relatorios/:id/documentacao-fiscal', autenticar, exigirPerfil('USUARIO'), uploadDocFiscal.array('arquivos'), anexos.incluirDocumentacaoFiscal);
 router.post('/relatorios/:id/atesto', autenticar, exigirPerfil('COORDENADOR'), upload.single('arquivo'), anexos.registrarAtesto);
 router.get('/anexos/:id/download', autenticar, anexos.download);
 

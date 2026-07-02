@@ -94,6 +94,16 @@ module.exports = {
       'application/vnd.ms-excel',
       'text/csv',
     ],
+    // Compactados (zip/rar) — aceitos só na documentação fiscal, além dos tipos acima.
+    // Vários navegadores/SOs reportam MIME types diferentes para o mesmo formato.
+    mimesCompactados: [
+      'application/zip',
+      'application/x-zip-compressed',
+      'multipart/x-zip',
+      'application/vnd.rar',
+      'application/x-rar-compressed',
+      'application/x-rar',
+    ],
   },
 
   // Análise por IA (Etapa B). Sem chave, opera em modo de simulação.

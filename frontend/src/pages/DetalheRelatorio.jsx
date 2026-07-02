@@ -451,8 +451,8 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
     return (
       <div className="card card-pad" style={{ marginTop: 16 }}>
         <h3 style={{ marginBottom: 6 }}>{e === 'APROVADO' ? 'Incluir documentação fiscal' : 'Reenviar documentos contábeis'}</h3>
-        <p className="descricao" style={{ marginBottom: 14 }}>Ao incluir, o sistema solicita automaticamente o atesto ao financeiro. PDF ou planilhas.</p>
-        <div className="dropzone">Selecione os documentos fiscais<input type="file" multiple accept=".pdf,.xlsx,.xls,.csv" onChange={(ev) => setArquivos(Array.from(ev.target.files))} /></div>
+        <p className="descricao" style={{ marginBottom: 14 }}>Ao incluir, o sistema solicita automaticamente o atesto ao financeiro. PDF, planilhas ou compactado (zip/rar).</p>
+        <div className="dropzone">Selecione os documentos fiscais<input type="file" multiple accept=".pdf,.xlsx,.xls,.csv,.zip,.rar" onChange={(ev) => setArquivos(Array.from(ev.target.files))} /></div>
         {arquivos.length > 0 && <p className="descricao" style={{ marginTop: 10 }}>{arquivos.length} arquivo(s) selecionado(s).</p>}
         <div className="row row-fim" style={{ marginTop: 14 }}>
           <button className="btn btn-primario" disabled={ocupado || arquivos.length === 0}
