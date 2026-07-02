@@ -20,12 +20,11 @@ function fmtValor(v) {
   const n = Number(v);
   return isNaN(n) ? String(v) : n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
-function blocoMedicao(relatorio, autor) {
+function blocoMedicao(relatorio) {
   return `<ul>
     <li><b>Medição:</b> ${relatorio.numMedicao}</li>
     <li><b>Contrato:</b> ${relatorio.contrato}</li>
     <li><b>Objeto:</b> ${relatorio.objeto}</li>
-    <li><b>Contratada:</b> ${autor?.contratada || '-'}</li>
     <li><b>Período:</b> ${fmtData(relatorio.periodoInicio)} a ${fmtData(relatorio.periodoFim)}</li>
     <li><b>Valor:</b> ${fmtValor(relatorio.valor)}</li>
   </ul>`;
@@ -37,14 +36,14 @@ function listaLinks(links) {
 }
 
 // Automático ao incluir documentação fiscal. links = [{nome, url}]
-async function financeiroSolicitaAtesto({ relatorio, autor, links, replyTo }) {
+async function financeiroSolicitaAtesto({ relatorio, links, replyTo }) {
   return mailer.enviar({
     para: env.email.financeiro,
     replyTo,
     assunto: `Solicitação de atesto contábil — Medição ${relatorio.numMedicao} (${relatorio.contrato})`,
     html: `<p>Prezados,</p>
       <p>A documentação fiscal da medição abaixo foi incluída no sistema e segue para atesto contábil.</p>
-      ${blocoMedicao(relatorio, autor)}
+      ${blocoMedicao(relatorio)}
       <p>Documentos fiscais (links válidos por tempo limitado):</p>
       ${listaLinks(links)}`,
   });

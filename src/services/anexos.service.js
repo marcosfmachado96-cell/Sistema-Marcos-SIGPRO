@@ -155,14 +155,13 @@ async function incluirDocumentacaoFiscal(id, arquivos, ator) {
 
   // E-mail ao financeiro (best-effort; falha de e-mail não desfaz a transição).
   try {
-    const autor = await prisma.usuario.findUnique({ where: { id: relatorio.autorId } });
     const links = [];
     for (const a of anexosCriados) {
       const url = await storage.linkDownload(a, env.s3.linkEmailExpiraSegundos);
       links.push({ nome: a.nomeArquivo, url });
     }
     await notificacoes.financeiroSolicitaAtesto({
-      relatorio: atualizado, autor, links, replyTo: env.email.replyTo || undefined,
+      relatorio: atualizado, links, replyTo: env.email.replyTo || undefined,
     });
   } catch (e) {
     console.error('Falha ao notificar inclusão de documentação fiscal:', e.message);
