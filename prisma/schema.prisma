@@ -93,6 +93,7 @@ model Usuario {
   solicitacoes     Solicitacao[] @relation("AutorSolicitacao")
   solicitacoesRespondidas Solicitacao[] @relation("RespondeuSolicitacao")
   logs             LogAuditoria[]
+  redefinicoesSenha RedefinicaoSenha[]
 
   @@map("usuarios")
 }
@@ -112,6 +113,19 @@ model Convite {
 
   @@index([email])
   @@map("convites")
+}
+
+model RedefinicaoSenha {
+  id          String    @id @default(uuid())
+  usuarioId   String
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  token       String    @unique
+  expiraEm    DateTime
+  usadoEm     DateTime?
+  criadoEm    DateTime  @default(now())
+
+  @@index([usuarioId])
+  @@map("redefinicoes_senha")
 }
 
 // ----------------------------------------------------------------------------

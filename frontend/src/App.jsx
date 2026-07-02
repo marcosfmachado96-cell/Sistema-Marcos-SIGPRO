@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth';
 import { AppShell } from './components/AppShell';
 import { Login } from './pages/Login';
+import { EsqueciSenha } from './pages/EsqueciSenha';
+import { RedefinirSenha } from './pages/RedefinirSenha';
 import { AceiteConvite } from './pages/AceiteConvite';
 import { PainelUsuario } from './pages/PainelUsuario';
 import { NovoRelatorio } from './pages/NovoRelatorio';
@@ -32,6 +34,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenha />} />
           <Route path="/aceite-convite" element={<AceiteConvite />} />
 
           <Route path="/" element={<Inicio />} />

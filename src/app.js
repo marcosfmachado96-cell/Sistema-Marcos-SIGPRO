@@ -33,6 +33,8 @@ const limiteAuth = rateLimit({
   message: { erro: 'Muitas tentativas. Tente novamente em alguns minutos.' },
 });
 app.use('/api/auth/login', limiteAuth);
+app.use('/api/auth/esqueci-senha', limiteAuth);
+app.use('/api/auth/redefinir-senha', limiteAuth);
 app.use('/api/convites/aceitar', limiteAuth);
 
 app.get('/saude', (req, res) => res.json({ ok: true, servico: 'medicao-der-pr' }));

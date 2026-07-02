@@ -39,6 +39,11 @@ module.exports = {
     validadeHoras: parseInt(process.env.CONVITE_VALIDADE_HORAS || '72', 10),
   },
 
+  redefinicaoSenha: {
+    // tempo de validade do link de redefinição de senha, em horas
+    validadeHoras: parseInt(process.env.REDEFINICAO_SENHA_VALIDADE_HORAS || '2', 10),
+  },
+
   app: {
     // URL base do frontend, usada para montar o link de aceite do convite
     urlBase: process.env.APP_URL_BASE || 'http://localhost:5173',
@@ -49,6 +54,9 @@ module.exports = {
     financeiro: process.env.EMAIL_FINANCEIRO || 'financeiro@simemp.com.br',
     remetente: process.env.EMAIL_REMETENTE || '',
     replyTo: process.env.EMAIL_REPLY_TO || '',
+    // Se definida, o envio usa a API HTTP do Brevo em vez de SMTP — necessário
+    // em hospedagens que bloqueiam portas SMTP de saída (ex.: Render free tier).
+    brevoApiKey: process.env.BREVO_API_KEY || '',
     smtp: {
       host: process.env.SMTP_HOST || '',
       porta: parseInt(process.env.SMTP_PORT || '587', 10),

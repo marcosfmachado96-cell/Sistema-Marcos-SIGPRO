@@ -2,16 +2,28 @@
 
 const BASE = import.meta.env.VITE_API_URL || '/api';
 
-let token = localStorage.getItem('token') || null;
+// Token e usuário ficam no localStorage ("lembrar-me") ou no sessionStorage
+// (some ao fechar o navegador), conforme escolhido no login.
+let token = localStorage.getItem('token') || sessionStorage.getItem('token') || null;
 
-export function definirToken(t) {
+export function definirToken(t, lembrar) {
   token = t;
-  if (t) localStorage.setItem('token', t);
-  else localStorage.removeItem('token');
+  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+  if (t) (lembrar ? localStorage : sessionStorage).setItem('token', t);
+}
+
+// Callback acionado quando uma requisição autenticada volta com 401
+// (sessão expirada/token inválido) — usado para encerrar a sessão e
+// devolver o usuário ao login em vez de mostrar o erro técnico na tela.
+let aoSessaoExpirar = null;
+export function definirAoSessaoExpirar(fn) {
+  aoSessaoExpirar = fn;
 }
 
 async function req(metodo, caminho, corpo, ehFormData) {
   const headers = {};
+  const autenticada = !!token;
   if (token) headers.Authorization = `Bearer ${token}`;
   let body;
   if (ehFormData) {
@@ -22,6 +34,8 @@ async function req(metodo, caminho, corpo, ehFormData) {
   }
 
   const resp = await fetch(`${BASE}${caminho}`, { method: metodo, headers, body });
+
+  if (resp.status === 401 && autenticada && aoSessaoExpirar) aoSessaoExpirar();
 
   if (resp.status === 204) return null;
   const texto = await resp.text();
@@ -37,6 +51,8 @@ async function req(metodo, caminho, corpo, ehFormData) {
 export const api = {
   // Autenticação / convites
   login: (email, senha) => req('POST', '/auth/login', { email, senha }),
+  esqueciSenha: (email) => req('POST', '/auth/esqueci-senha', { email }),
+  redefinirSenha: (token, senha) => req('POST', '/auth/redefinir-senha', { token, senha }),
   validarConvite: (t) => req('GET', `/convites/validar?token=${encodeURIComponent(t)}`),
   aceitarConvite: (t, nome, senha) => req('POST', '/convites/aceitar', { token: t, nome, senha }),
   convidar: (dados) => req('POST', '/convites', dados),

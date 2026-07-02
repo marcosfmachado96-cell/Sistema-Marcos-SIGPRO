@@ -11,6 +11,8 @@ const router = Router();
 
 // --- Públicas (aceite de convite e login) ---
 router.post('/auth/login', auth.login);
+router.post('/auth/esqueci-senha', auth.esqueciSenha);
+router.post('/auth/redefinir-senha', auth.redefinirSenha);
 router.get('/convites/validar', convites.validar);
 router.post('/convites/aceitar', convites.aceitar);
 

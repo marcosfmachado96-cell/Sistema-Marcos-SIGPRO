@@ -11,10 +11,10 @@ async function main() {
 
   const v = await mailer.verificar();
   if (!v.configurado) {
-    console.log('SMTP não configurado. Preencha SMTP_HOST, SMTP_USER e SMTP_PASS no .env.');
+    console.log('E-mail não configurado. Preencha SMTP_HOST/SMTP_USER/SMTP_PASS ou BREVO_API_KEY no .env.');
     return;
   }
-  console.log('Conexão SMTP verificada com sucesso.');
+  console.log(v.modo === 'brevo-api' ? 'API do Brevo configurada com sucesso.' : 'Conexão SMTP verificada com sucesso.');
 
   if (destino) {
     await mailer.enviar({

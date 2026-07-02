@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { Logo } from '../components/Logo';
 
@@ -15,6 +15,7 @@ export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [lembrar, setLembrar] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -23,7 +24,7 @@ export function Login() {
     setErro('');
     setEnviando(true);
     try {
-      const u = await entrar(email, senha);
+      const u = await entrar(email, senha, lembrar);
       navigate(u.perfil === 'COORDENADOR' ? '/coordenador' : '/relatorios');
     } catch (err) {
       setErro(err.message);
@@ -94,8 +95,10 @@ export function Login() {
           </div>
 
           <div className="acesso-linha">
-            <label className="check"><input type="checkbox" /> Lembrar-me</label>
-            <span className="link-fraco">Esqueceu a senha?</span>
+            <label className="check">
+              <input type="checkbox" checked={lembrar} onChange={(e) => setLembrar(e.target.checked)} /> Lembrar-me
+            </label>
+            <Link to="/esqueci-senha" className="link-fraco">Esqueceu a senha?</Link>
           </div>
 
           <button className="btn btn-primario btn-bloco" disabled={enviando}>
