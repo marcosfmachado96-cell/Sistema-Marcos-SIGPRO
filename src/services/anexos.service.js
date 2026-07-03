@@ -54,13 +54,18 @@ function nomePadronizado(categoria, relatorio, original, indice, revisao) {
 //  - MEDICAO: acompanha a versão do relatório (reenvio após reprovação).
 //  - DOC_FISCAL: conta quantas vezes a documentação fiscal já foi enviada
 //    (1ª vez sem sufixo; a partir da 2ª, REV01, REV02...).
-//  - demais categorias (ATESTO, RELATORIO_ASSINADO): não se repetem, sem sufixo.
+//  - ATESTO: conta quantos atestos já foram inseridos (processo reaberto
+//    e atestado de novo ganha REV01, REV02...).
+//  - RELATORIO_ASSINADO: não se repete (só existe uma aprovação), sem sufixo.
 async function calcularRevisao(relatorioId, categoria, relatorio) {
   if (categoria === 'MEDICAO') return Math.max(0, relatorio.versaoAtual - 1);
   if (categoria === 'DOC_FISCAL') {
     return prisma.logAuditoria.count({
       where: { relatorioId, acao: { in: ['ANEXAR_DOC_FISCAL', 'REENVIAR_DOCUMENTOS'] } },
     });
+  }
+  if (categoria === 'ATESTO') {
+    return prisma.logAuditoria.count({ where: { relatorioId, acao: 'INSERIR_ATESTO' } });
   }
   return 0;
 }
