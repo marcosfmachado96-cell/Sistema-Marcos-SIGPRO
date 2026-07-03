@@ -41,6 +41,7 @@ router.post('/relatorios/:id/observacoes', autenticar, exigirPerfil('COORDENADOR
 router.post('/relatorios/:id/observacoes/confirmar', autenticar, exigirPerfil('COORDENADOR'), relatorios.confirmarObservacoes);
 router.post('/relatorios/:id/analise-ia', autenticar, exigirPerfil('COORDENADOR'), relatorios.analisarIA);
 router.post('/relatorios/:id/analise-ia/decidir', autenticar, exigirPerfil('COORDENADOR'), relatorios.decidirAnaliseIA);
+router.post('/relatorios/:id/reabrir', autenticar, exigirPerfil('COORDENADOR'), relatorios.reabrir);
 
 // --- Solicitações gerais ---
 router.get('/solicitacoes', autenticar, solicitacoes.listar);

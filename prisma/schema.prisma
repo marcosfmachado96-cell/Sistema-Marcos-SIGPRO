@@ -48,6 +48,7 @@ enum CategoriaAnexo {
 enum TipoObservacao {
   REPROVACAO_MEDICAO   // observações ao reprovar a medição
   CORRECAO_DOCUMENTAL  // observações ao solicitar correção de documentos
+  REABERTURA           // justificativa do coordenador ao reabrir um processo concluído
 }
 
 enum OrigemObservacao {
@@ -158,7 +159,7 @@ model Relatorio {
   versoes     RelatorioVersao[]
   observacoes Observacao[]
   anexos      Anexo[]
-  atesto      Atesto?
+  atestos     Atesto[]
   analises    AnaliseIA[]
   logs        LogAuditoria[]
 
@@ -247,9 +248,12 @@ model Anexo {
 // Atesto contábil
 // ----------------------------------------------------------------------------
 
+// Um relatório pode ter mais de um atesto ao longo do tempo: se o coordenador
+// reabrir um processo concluído, um novo atesto é emitido preservando o(s)
+// anterior(es) no histórico (nunca sobrescreve).
 model Atesto {
   id            String   @id @default(uuid())
-  relatorioId   String   @unique
+  relatorioId   String
   relatorio     Relatorio @relation(fields: [relatorioId], references: [id])
   coordenadorId String
   coordenador   Usuario  @relation(fields: [coordenadorId], references: [id])
@@ -257,6 +261,7 @@ model Atesto {
   observacoes   String?
   criadoEm      DateTime @default(now())
 
+  @@index([relatorioId])
   @@map("atestos")
 }
 

@@ -79,6 +79,7 @@ export const api = {
   reprovar: (id, itens) => req('POST', `/relatorios/${id}/reprovar`, { itens }),
   correcaoDocumental: (id, itens) => req('POST', `/relatorios/${id}/correcao-documental`, { itens }),
   reenviar: (id, dados) => req('POST', `/relatorios/${id}/reenviar`, dados),
+  reabrir: (id, texto) => req('POST', `/relatorios/${id}/reabrir`, { texto }),
 
   // Observações
   adicionarObservacao: (id, texto, tipo) => req('POST', `/relatorios/${id}/observacoes`, { texto, tipo }),

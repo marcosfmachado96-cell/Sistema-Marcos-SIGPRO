@@ -24,6 +24,7 @@ const ACOES = {
   SOLICITAR_CORRECAO_DOCUMENTAL: 'SOLICITAR_CORRECAO_DOCUMENTAL',
   REENVIAR_DOCUMENTOS: 'REENVIAR_DOCUMENTOS',
   INSERIR_ATESTO: 'INSERIR_ATESTO',
+  REABRIR: 'REABRIR',
 };
 
 // perfilExigido: quem pode executar a ação.
@@ -53,7 +54,11 @@ const TRANSICOES = {
   [ESTADOS.CORRECAO_DOCUMENTAL]: {
     [ACOES.REENVIAR_DOCUMENTOS]: { destino: ESTADOS.AGUARDANDO_ATESTO, perfil: 'USUARIO', exigeAnexo: 'DOC_FISCAL' },
   },
-  [ESTADOS.CONCLUIDO]: {}, // estado terminal
+  [ESTADOS.CONCLUIDO]: {
+    // Reabertura: volta para CORRECAO_DOCUMENTAL, mesma tela em que o autor já
+    // reenvia documentação fiscal — permite novo atesto sem perder o histórico.
+    [ACOES.REABRIR]: { destino: ESTADOS.CORRECAO_DOCUMENTAL, perfil: 'COORDENADOR', exigeObservacao: true },
+  },
 };
 
 class TransicaoInvalidaError extends Error {

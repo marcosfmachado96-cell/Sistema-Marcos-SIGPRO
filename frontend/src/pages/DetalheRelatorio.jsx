@@ -155,6 +155,7 @@ function rotuloAcao(l) {
     ADICIONAR_OBSERVACAO: 'Observação adicionada', DECLARAR_OBSERVACOES: 'Colaborador declarou observações',
     CONFIRMAR_OBSERVACOES: 'Coordenador confirmou observações', EXCLUIR_RELATORIO: 'Relatório excluído',
     ANALISE_IA: 'Análise por IA executada', DECIDIR_ANALISE_IA: 'Decisão sobre a análise da IA',
+    REABRIR: 'Processo reaberto pelo coordenador',
   };
   return m[l.acao] || l.acao;
 }
@@ -163,7 +164,9 @@ function rotuloAcao(l) {
 // Observações numeradas — colaborador declara, coordenador confirma.
 // ---------------------------------------------------------------------------
 function Observacoes({ rel, ehCoordenador, ocupado, acao }) {
-  const obs = rel.observacoes || [];
+  // REABERTURA é uma justificativa de auditoria (já aparece no Histórico), não
+  // um item numerado do fluxo declarar/confirmar do colaborador/coordenador.
+  const obs = (rel.observacoes || []).filter((o) => o.tipo !== 'REABERTURA');
   const [decl, setDecl] = useState({});      // colaborador: { [id]: {status, declaracao} }
   const [conf, setConf] = useState({});      // coordenador: { [id]: confirmacao }
   const [novaObs, setNovaObs] = useState('');
@@ -287,6 +290,7 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
   const [obsLinhas, setObsLinhas] = useState(['']);
   const [corrLinhas, setCorrLinhas] = useState(['']);
   const [analisando, setAnalisando] = useState(false);
+  const [reabrirTexto, setReabrirTexto] = useState('');
   const analise = (rel.analises && rel.analises[0]) || null;
 
   function setLinha(arr, set, i, v) { const c = [...arr]; c[i] = v; set(c); }
@@ -465,17 +469,40 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
 
   // ---- Concluído ----
   if (e === 'CONCLUIDO') {
-    const atesto = (rel.anexos || []).find((a) => a.categoria === 'ATESTO');
+    const ultimoAtesto = (rel.atestos || [])[rel.atestos.length - 1] || null;
+    const atestoAnexo = ultimoAtesto?.anexoId
+      ? (rel.anexos || []).find((a) => a.id === ultimoAtesto.anexoId)
+      : null;
     return (
       <div className="card card-pad" style={{ marginTop: 16 }}>
         <div className="alerta alerta-info">
           <b>Processo concluído.</b> O atesto contábil foi emitido.
-          {rel.atesto?.observacoes ? <div style={{ marginTop: 6 }}>{rel.atesto.observacoes}</div> : null}
+          {ultimoAtesto?.observacoes ? <div style={{ marginTop: 6 }}>{ultimoAtesto.observacoes}</div> : null}
         </div>
-        {atesto && (
+        {atestoAnexo && (
           <div className="row" style={{ marginTop: 12 }}>
-            <button className="btn btn-secundario" onClick={() => api.baixarAnexo(atesto.id, atesto.nomeArquivo)}>Baixar atesto</button>
+            <button className="btn btn-secundario" onClick={() => api.baixarAnexo(atestoAnexo.id, atestoAnexo.nomeArquivo)}>Baixar atesto</button>
           </div>
+        )}
+        {ehCoordenador && (
+          <>
+            <hr className="divisor" />
+            <div className="campo">
+              <label>Reabrir processo <span className="dica">(justificativa obrigatória)</span></label>
+              <p className="descricao" style={{ marginBottom: 8 }}>
+                Volta para "Correção documental" — o autor poderá anexar novos documentos fiscais
+                e reenviar para um novo atesto. O histórico atual é preservado.
+              </p>
+              <textarea className="textarea" value={reabrirTexto} onChange={(ev) => setReabrirTexto(ev.target.value)}
+                placeholder="Motivo da reabertura…" />
+            </div>
+            <div className="row row-fim">
+              <button className="btn btn-secundario" disabled={ocupado || !reabrirTexto.trim()}
+                onClick={() => acao(() => api.reabrir(rel.id, reabrirTexto)).then(() => setReabrirTexto(''))}>
+                Reabrir processo
+              </button>
+            </div>
+          </>
         )}
       </div>
     );

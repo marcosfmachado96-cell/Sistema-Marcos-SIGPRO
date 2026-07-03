@@ -34,6 +34,11 @@ module.exports = {
     try { res.json(await service.reenviar(req.params.id, req.body, req.usuario)); } catch (e) { next(e); }
   },
 
+  // Coordenador reabre um processo concluído (exige justificativa).
+  async reabrir(req, res, next) {
+    try { res.json(await service.reabrir(req.params.id, req.body.texto, req.usuario)); } catch (e) { next(e); }
+  },
+
   // Observações
   async adicionarObservacao(req, res, next) {
     try { res.status(201).json(await service.adicionarObservacao(req.params.id, req.body.texto, req.body.tipo, req.usuario)); } catch (e) { next(e); }

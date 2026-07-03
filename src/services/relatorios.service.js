@@ -103,6 +103,12 @@ async function criar(dados, ator) {
 // Executor genérico de transição (aprovar / reprovar / inserir atesto / etc.)
 // ----------------------------------------------------------------------------
 
+const TIPO_OBSERVACAO_POR_ACAO = {
+  [ACOES.REPROVAR]: 'REPROVACAO_MEDICAO',
+  [ACOES.SOLICITAR_CORRECAO_DOCUMENTAL]: 'CORRECAO_DOCUMENTAL',
+  [ACOES.REABRIR]: 'REABERTURA',
+};
+
 async function executarTransicao(id, acao, ator, payload = {}) {
   const relatorio = await obterRelatorio(id);
   autorizarAcesso(relatorio, ator);
@@ -121,7 +127,7 @@ async function executarTransicao(id, acao, ator, payload = {}) {
 
     // Registra observação, quando aplicável.
     if (transicao.exigeObservacao) {
-      const tipo = acao === ACOES.REPROVAR ? 'REPROVACAO_MEDICAO' : 'CORRECAO_DOCUMENTAL';
+      const tipo = TIPO_OBSERVACAO_POR_ACAO[acao] || 'CORRECAO_DOCUMENTAL';
       await tx.observacao.create({
         data: {
           relatorioId: id,
@@ -150,6 +156,13 @@ async function executarTransicao(id, acao, ator, payload = {}) {
   });
 
   return atualizado;
+}
+
+// Coordenador reabre um processo concluído (ex.: financeiro pede novo documento
+// fiscal). Volta para CORRECAO_DOCUMENTAL — mesma tela em que o autor já anexa
+// documentação fiscal e reenvia; nada do histórico anterior é apagado.
+function reabrir(id, texto, ator) {
+  return executarTransicao(id, ACOES.REABRIR, ator, { texto });
 }
 
 // ----------------------------------------------------------------------------
@@ -231,7 +244,7 @@ async function detalhar(id, ator) {
       versoes: { orderBy: { numeroVersao: 'asc' } },
       observacoes: { orderBy: [{ numero: 'asc' }] },
       anexos: true,
-      atesto: true,
+      atestos: { orderBy: { criadoEm: 'asc' } },
       analises: { orderBy: { criadoEm: 'desc' }, include: { itens: { orderBy: { numero: 'asc' } } } },
     },
   });
@@ -431,6 +444,7 @@ async function decidirAnaliseItens(id, decisoes, ator) {
 module.exports = {
   criar,
   executarTransicao,
+  reabrir,
   reenviar,
   listar,
   detalhar,
