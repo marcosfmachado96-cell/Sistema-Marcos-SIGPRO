@@ -233,6 +233,7 @@ model Anexo {
 
   categoria    CategoriaAnexo
   nomeArquivo  String
+  descricao    String?        // rótulo livre do colaborador (obrigatório p/ planilhas de medição)
   chaveS3      String         // caminho do objeto no bucket
   tamanho      Int
   contentType  String

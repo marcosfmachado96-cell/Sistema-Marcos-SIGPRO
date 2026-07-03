@@ -65,9 +65,21 @@ async function calcularRevisao(relatorioId, categoria, relatorio) {
   return 0;
 }
 
+// Planilhas (xlsx/xls) exigem que o colaborador identifique o conteúdo
+// (ex.: "Resumo Controle Tecnológico", "Planilha AS BUILT").
+const MIMES_PLANILHA = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+  'application/vnd.ms-excel', // xls
+];
+function ehPlanilha(f) {
+  const nome = String(f?.originalname || '').toLowerCase();
+  return nome.endsWith('.xlsx') || nome.endsWith('.xls') || MIMES_PLANILHA.includes(f?.mimetype);
+}
+
 // Envia os arquivos ao storage e devolve os metadados (sem buffer).
 // O nome exibido/baixado é padronizado por tipo, número da medição, contrato e revisão.
-async function persistir(relatorioId, categoria, arquivos, versaoId, atorId) {
+// `descricoes[i]` (opcional) vira o rótulo do arquivo em arquivos[i].
+async function persistir(relatorioId, categoria, arquivos, versaoId, atorId, descricoes = []) {
   const relatorio = await prisma.relatorio.findUnique({
     where: { id: relatorioId }, select: { numMedicao: true, contrato: true, versaoAtual: true },
   });
@@ -78,11 +90,13 @@ async function persistir(relatorioId, categoria, arquivos, versaoId, atorId) {
     const nome = nomePadronizado(categoria, relatorio, f.originalname, arquivos.length > 1 ? i : null, revisao);
     const chave = storage.montarChave(relatorioId, categoria, nome);
     await storage.enviarObjeto({ chave, buffer: f.buffer, contentType: f.mimetype });
+    const descricao = String(descricoes[i] || '').trim();
     registros.push({
       relatorioId,
       versaoId: versaoId || null,
       categoria,
       nomeArquivo: nome,
+      descricao: descricao || null,
       chaveS3: chave,
       tamanho: f.size,
       contentType: f.mimetype,
@@ -96,7 +110,7 @@ async function persistir(relatorioId, categoria, arquivos, versaoId, atorId) {
 // ----------------------------------------------------------------------------
 // Anexos de medição (sem transição)
 // ----------------------------------------------------------------------------
-async function anexarMedicao(id, arquivos, ator) {
+async function anexarMedicao(id, arquivos, ator, descricoes = []) {
   if (!arquivos || arquivos.length === 0) {
     const e = new Error('Nenhum arquivo enviado.'); e.status = 400; throw e;
   }
@@ -108,9 +122,17 @@ async function anexarMedicao(id, arquivos, ator) {
   if (!ESTADOS_EDICAO_MEDICAO.includes(relatorio.estado)) {
     const e = new Error('Anexos de medição só podem ser incluídos antes da aprovação.'); e.status = 409; throw e;
   }
+  // Planilhas exigem uma descrição do que o arquivo é (ex.: "Planilha AS BUILT").
+  arquivos.forEach((f, i) => {
+    if (ehPlanilha(f) && !String(descricoes[i] || '').trim()) {
+      const e = new Error(`Descreva o conteúdo da planilha "${f.originalname}" antes de enviar.`);
+      e.status = 400;
+      throw e;
+    }
+  });
 
   const vId = await versaoAtualId(id, relatorio.versaoAtual);
-  const registros = await persistir(id, 'MEDICAO', arquivos, vId, ator.id);
+  const registros = await persistir(id, 'MEDICAO', arquivos, vId, ator.id, descricoes);
 
   return prisma.$transaction(async (tx) => {
     const criados = [];

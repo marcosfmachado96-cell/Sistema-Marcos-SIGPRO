@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { ehPlanilha } from '../util';
 
 export function NovoRelatorio() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export function NovoRelatorio() {
     periodoInicio: '', periodoFim: '', valor: '',
   });
   const [arquivos, setArquivos] = useState([]);
+  const [descricoes, setDescricoes] = useState({}); // { [indice]: texto }
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -16,9 +18,19 @@ export function NovoRelatorio() {
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
+  function selecionarArquivos(lista) {
+    setArquivos(lista);
+    setDescricoes({});
+  }
+
   async function aoSalvar(e) {
     e.preventDefault();
     setErro('');
+    const semDescricao = arquivos.findIndex((a, i) => ehPlanilha(a) && !(descricoes[i] || '').trim());
+    if (semDescricao !== -1) {
+      setErro(`Descreva o conteúdo da planilha "${arquivos[semDescricao].name}" antes de enviar.`);
+      return;
+    }
     setEnviando(true);
     try {
       const r = await api.criarRelatorio({
@@ -27,7 +39,7 @@ export function NovoRelatorio() {
       });
       if (arquivos.length > 0) {
         // anexos de medição são incluídos logo após a criação
-        await api.anexarMedicao(r.id, arquivos);
+        await api.anexarMedicao(r.id, arquivos, arquivos.map((_, i) => descricoes[i] || ''));
       }
       navigate(`/relatorios/${r.id}`);
     } catch (err) {
@@ -91,10 +103,20 @@ export function NovoRelatorio() {
           <div className="dropzone">
             Selecione os arquivos da medição
             <input type="file" multiple accept=".pdf,.xlsx,.xls,.csv"
-              onChange={(e) => setArquivos(Array.from(e.target.files))} />
+              onChange={(e) => selecionarArquivos(Array.from(e.target.files))} />
           </div>
           {arquivos.length > 0 && (
-            <p className="descricao" style={{ marginTop: 10 }}>{arquivos.length} arquivo(s) selecionado(s).</p>
+            <div style={{ marginTop: 10 }}>
+              {arquivos.map((a, i) => (
+                <div key={i} className="campo" style={{ marginBottom: 8 }}>
+                  <label className="mono" style={{ fontSize: 13 }}>{a.name}</label>
+                  {ehPlanilha(a) && (
+                    <input className="input" placeholder='Sobre o que é essa planilha? Ex.: "Resumo Controle Tecnológico Supervisão"'
+                      value={descricoes[i] || ''} onChange={(e) => setDescricoes((d) => ({ ...d, [i]: e.target.value }))} />
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

@@ -90,8 +90,10 @@ export const api = {
   analisarIA: (id) => req('POST', `/relatorios/${id}/analise-ia`),
   decidirAnaliseIA: (id, decisoes) => req('POST', `/relatorios/${id}/analise-ia/decidir`, { decisoes }),
 
-  // Anexos (multipart)
-  anexarMedicao: (id, arquivos) => req('POST', `/relatorios/${id}/anexos`, formData({ arquivos }), true),
+  // Anexos (multipart). `descricoes` (opcional) é alinhado por índice com `arquivos`
+  // — obrigatório para planilhas (xlsx/xls), que exigem um rótulo do conteúdo.
+  anexarMedicao: (id, arquivos, descricoes) =>
+    req('POST', `/relatorios/${id}/anexos`, formData({ arquivos, descricoes }), true),
   incluirDocFiscal: (id, arquivos) => req('POST', `/relatorios/${id}/documentacao-fiscal`, formData({ arquivos }), true),
   registrarAtesto: (id, arquivo, observacoes) =>
     req('POST', `/relatorios/${id}/atesto`, formData({ arquivo, observacoes }), true),
@@ -114,10 +116,11 @@ export const api = {
   },
 };
 
-function formData({ arquivos, arquivo, observacoes }) {
+function formData({ arquivos, arquivo, observacoes, descricoes }) {
   const fd = new FormData();
   if (arquivos) for (const f of arquivos) fd.append('arquivos', f);
   if (arquivo) fd.append('arquivo', arquivo);
   if (observacoes != null) fd.append('observacoes', observacoes);
+  if (descricoes) fd.append('descricoes', JSON.stringify(descricoes));
   return fd;
 }

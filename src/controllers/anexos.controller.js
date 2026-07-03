@@ -4,7 +4,12 @@ const service = require('../services/anexos.service');
 module.exports = {
   async anexarMedicao(req, res, next) {
     try {
-      res.status(201).json(await service.anexarMedicao(req.params.id, req.files, req.usuario));
+      // 'descricoes' chega como JSON stringificado (array alinhado por índice com os arquivos).
+      let descricoes = [];
+      if (req.body.descricoes) {
+        try { descricoes = JSON.parse(req.body.descricoes); } catch { descricoes = []; }
+      }
+      res.status(201).json(await service.anexarMedicao(req.params.id, req.files, req.usuario, descricoes));
     } catch (e) { next(e); }
   },
 

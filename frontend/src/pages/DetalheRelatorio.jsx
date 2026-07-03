@@ -4,7 +4,7 @@ import { api } from '../api';
 import { useAuth } from '../auth';
 import { Pipeline, StatusBadge } from '../components/Pipeline';
 import { ROTULOS } from '../estados';
-import { fmtMoeda, fmtPeriodo, fmtDataHora } from '../util';
+import { fmtMoeda, fmtPeriodo, fmtDataHora, ehPlanilha } from '../util';
 
 export function DetalheRelatorio() {
   const { id } = useParams();
@@ -139,6 +139,7 @@ function GrupoAnexos({ titulo, itens }) {
         <li key={a.id}>
           <span className="tag-categoria">{titulo}</span>
           <button className="link-anexo" onClick={() => api.baixarAnexo(a.id, a.nomeArquivo)}>{a.nomeArquivo}</button>
+          {a.descricao && <span className="descricao"> — {a.descricao}</span>}
         </li>
       ))}
     </ul>
@@ -286,6 +287,8 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
   const e = rel.estado;
   const [arquivos, setArquivos] = useState([]);
   const [revArquivos, setRevArquivos] = useState([]);
+  const [revDescricoes, setRevDescricoes] = useState({}); // { [indice]: texto }
+  const [revErro, setRevErro] = useState('');
   const [assinado, setAssinado] = useState(null);
   const [atestoArquivo, setAtestoArquivo] = useState(null);
   const [atestoObs, setAtestoObs] = useState('');
@@ -435,19 +438,38 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
           <label>Relatório revisado <span className="dica">(PDF; anexe a versão corrigida)</span></label>
           <div className="dropzone">
             Selecione o PDF do relatório revisado
-            <input type="file" multiple accept=".pdf,.xlsx,.xls,.csv" onChange={(ev) => setRevArquivos(Array.from(ev.target.files))} />
+            <input type="file" multiple accept=".pdf,.xlsx,.xls,.csv"
+              onChange={(ev) => { setRevArquivos(Array.from(ev.target.files)); setRevDescricoes({}); }} />
           </div>
-          {revArquivos.length > 0 && <p className="descricao" style={{ marginTop: 8 }}>{revArquivos.length} arquivo(s) selecionado(s).</p>}
+          {revArquivos.length > 0 && revArquivos.map((a, i) => (
+            <div key={i} className="campo" style={{ marginTop: 8, marginBottom: 0 }}>
+              <label className="mono" style={{ fontSize: 13 }}>{a.name}</label>
+              {ehPlanilha(a) && (
+                <input className="input" placeholder='Sobre o que é essa planilha? Ex.: "Planilha AS BUILT"'
+                  value={revDescricoes[i] || ''} onChange={(ev) => setRevDescricoes((d) => ({ ...d, [i]: ev.target.value }))} />
+              )}
+            </div>
+          ))}
         </div>
+        {revErro && <div className="alerta alerta-erro" style={{ marginBottom: 12 }}>{revErro}</div>}
         <hr className="divisor" />
         <div className="row row-fim">
-          <button className="btn btn-primario" disabled={ocupado} onClick={() => acao(async () => {
-            await api.reenviar(rel.id, {});
-            if (revArquivos.length > 0) {
-              await api.anexarMedicao(rel.id, revArquivos);
-              setRevArquivos([]);
+          <button className="btn btn-primario" disabled={ocupado} onClick={() => {
+            const semDescricao = revArquivos.findIndex((a, i) => ehPlanilha(a) && !(revDescricoes[i] || '').trim());
+            if (semDescricao !== -1) {
+              setRevErro(`Descreva o conteúdo da planilha "${revArquivos[semDescricao].name}" antes de enviar.`);
+              return;
             }
-          })}>Reenviar para análise</button>
+            setRevErro('');
+            acao(async () => {
+              await api.reenviar(rel.id, {});
+              if (revArquivos.length > 0) {
+                await api.anexarMedicao(rel.id, revArquivos, revArquivos.map((_, i) => revDescricoes[i] || ''));
+                setRevArquivos([]);
+                setRevDescricoes({});
+              }
+            });
+          }}>Reenviar para análise</button>
         </div>
       </div>
     );

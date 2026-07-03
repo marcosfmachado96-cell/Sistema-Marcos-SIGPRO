@@ -18,3 +18,9 @@ export function fmtDataHora(d) {
 export function fmtPeriodo(ini, fim) {
   return `${fmtData(ini)} – ${fmtData(fim)}`;
 }
+
+// Planilhas exigem uma descrição do conteúdo (ex.: "Planilha AS BUILT").
+export function ehPlanilha(arquivo) {
+  const nome = arquivo.name.toLowerCase();
+  return nome.endsWith('.xlsx') || nome.endsWith('.xls');
+}
