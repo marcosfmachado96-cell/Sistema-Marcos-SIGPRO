@@ -289,6 +289,7 @@ a:hover { text-decoration: underline; }
 
 .obs-item { padding: 12px 14px; border-left: 3px solid var(--st-ambar); background: var(--ambar-veu); border-radius: 0 var(--raio-sm) var(--raio-sm) 0; margin-bottom: 10px; }
 .obs-item.reprovacao { border-left-color: var(--st-vermelho); background: var(--st-vermelho-veu); }
+.obs-item.confirmada { border-left-color: var(--st-verde); background: var(--st-verde-veu); }
 .obs-item .obs-cab { font-family: var(--fonte-mono); font-size: 11px; color: var(--texto-suave); margin-bottom: 4px; }
 
 .timeline { list-style: none; padding: 0; margin: 0; }

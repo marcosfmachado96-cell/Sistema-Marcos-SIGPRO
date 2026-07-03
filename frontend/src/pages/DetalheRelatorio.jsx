@@ -208,8 +208,10 @@ function Observacoes({ rel, ehCoordenador, ocupado, acao }) {
       <h3 style={{ marginBottom: 12 }}>Observações do coordenador</h3>
       {obs.map((o) => {
         const d = decl[o.id] || { status: o.statusColaborador, declaracao: o.declaracao || '' };
+        const confirmada = o.statusColaborador === 'ATENDIDO' && o.confirmacao === 'CONFIRMADO';
+        const classeCor = confirmada ? 'confirmada' : (o.tipo === 'REPROVACAO_MEDICAO' ? 'reprovacao' : '');
         return (
-          <div key={o.id} className={`obs-item ${o.tipo === 'REPROVACAO_MEDICAO' ? 'reprovacao' : ''}`}>
+          <div key={o.id} className={`obs-item ${classeCor}`}>
             <div className="obs-cab">
               <b>#{o.numero}</b>{o.origem === 'IA' ? ' · IA' : ''} · {o.tipo === 'REPROVACAO_MEDICAO' ? 'Medição' : 'Documental'}
               {' · '}<span className="tag-status">{statusLabel[o.statusColaborador]}</span>
