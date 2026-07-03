@@ -421,8 +421,9 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
       <div className="card card-pad" style={{ marginTop: 16 }}>
         <h3 style={{ marginBottom: 6 }}>Ajustar e reenviar</h3>
         <p className="descricao" style={{ marginBottom: 14 }}>
-          Declare cada observação acima como atendida ou não atendida e salve. Anexe o relatório
-          revisado e reenvie — uma nova versão é criada e o relatório volta para análise.
+          Declare cada observação acima como atendida ou não atendida e salve. Selecione o relatório
+          revisado e reenvie — uma nova versão é criada, o anexo é incluído nela e o relatório volta
+          para análise.
         </p>
         <div className="campo">
           <label>Relatório revisado <span className="dica">(PDF; anexe a versão corrigida)</span></label>
@@ -431,16 +432,16 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
             <input type="file" multiple accept=".pdf,.xlsx,.xls,.csv" onChange={(ev) => setRevArquivos(Array.from(ev.target.files))} />
           </div>
           {revArquivos.length > 0 && <p className="descricao" style={{ marginTop: 8 }}>{revArquivos.length} arquivo(s) selecionado(s).</p>}
-          <div className="row row-fim" style={{ marginTop: 10 }}>
-            <button className="btn btn-secundario" disabled={ocupado || revArquivos.length === 0}
-              onClick={() => acao(() => api.anexarMedicao(rel.id, revArquivos)).then(() => setRevArquivos([]))}>
-              Anexar relatório revisado
-            </button>
-          </div>
         </div>
         <hr className="divisor" />
         <div className="row row-fim">
-          <button className="btn btn-primario" disabled={ocupado} onClick={() => acao(() => api.reenviar(rel.id, {}))}>Reenviar para análise</button>
+          <button className="btn btn-primario" disabled={ocupado} onClick={() => acao(async () => {
+            await api.reenviar(rel.id, {});
+            if (revArquivos.length > 0) {
+              await api.anexarMedicao(rel.id, revArquivos);
+              setRevArquivos([]);
+            }
+          })}>Reenviar para análise</button>
         </div>
       </div>
     );
