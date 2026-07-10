@@ -289,6 +289,7 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
   const [revArquivos, setRevArquivos] = useState([]);
   const [revDescricoes, setRevDescricoes] = useState({}); // { [indice]: texto }
   const [revErro, setRevErro] = useState('');
+  const [novoValor, setNovoValor] = useState(rel.valor);
   const [assinado, setAssinado] = useState(null);
   const [atestoArquivo, setAtestoArquivo] = useState(null);
   const [atestoObs, setAtestoObs] = useState('');
@@ -426,14 +427,30 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
 
   // ---- Colaborador: reenvio após reprovação ----
   if (!ehCoordenador && e === 'REPROVADO') {
+    const obsPendentes = (rel.observacoes || []).filter(
+      (o) => o.tipo === 'REPROVACAO_MEDICAO' && o.statusColaborador === 'PENDENTE' && !(o.declaracao || '').trim()
+    );
     return (
       <div className="card card-pad" style={{ marginTop: 16 }}>
         <h3 style={{ marginBottom: 6 }}>Ajustar e reenviar</h3>
         <p className="descricao" style={{ marginBottom: 14 }}>
-          Declare cada observação acima como atendida ou não atendida e salve. Selecione o relatório
-          revisado e reenvie — uma nova versão é criada, o anexo é incluído nela e o relatório volta
-          para análise.
+          Declare cada observação acima como atendida ou não atendida (ou justifique) e salve. Corrija o
+          valor se necessário, selecione o relatório revisado e reenvie — uma nova versão é criada, o
+          anexo é incluído nela e o relatório volta para análise.
         </p>
+
+        {obsPendentes.length > 0 && (
+          <div className="alerta alerta-ambar" style={{ marginBottom: 14 }}>
+            Declare como atendida/não atendida (ou justifique) cada observação acima antes de reenviar.
+          </div>
+        )}
+
+        <div className="campo" style={{ maxWidth: 260 }}>
+          <label>Valor da medição (R$)</label>
+          <input className="input mono" type="number" step="0.01" min="0"
+            value={novoValor} onChange={(ev) => setNovoValor(ev.target.value)} />
+        </div>
+
         <div className="campo">
           <label>Relatório revisado <span className="dica">(PDF; anexe a versão corrigida)</span></label>
           <div className="dropzone">
@@ -454,7 +471,7 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
         {revErro && <div className="alerta alerta-erro" style={{ marginBottom: 12 }}>{revErro}</div>}
         <hr className="divisor" />
         <div className="row row-fim">
-          <button className="btn btn-primario" disabled={ocupado} onClick={() => {
+          <button className="btn btn-primario" disabled={ocupado || obsPendentes.length > 0} onClick={() => {
             const semDescricao = revArquivos.findIndex((a, i) => ehPlanilha(a) && !(revDescricoes[i] || '').trim());
             if (semDescricao !== -1) {
               setRevErro(`Descreva o conteúdo da planilha "${revArquivos[semDescricao].name}" antes de enviar.`);
@@ -462,7 +479,7 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
             }
             setRevErro('');
             acao(async () => {
-              await api.reenviar(rel.id, {});
+              await api.reenviar(rel.id, { valor: Number(novoValor) });
               if (revArquivos.length > 0) {
                 await api.anexarMedicao(rel.id, revArquivos, revArquivos.map((_, i) => revDescricoes[i] || ''));
                 setRevArquivos([]);

@@ -174,6 +174,22 @@ async function reenviar(id, dados, ator) {
   autorizarAcesso(relatorio, ator);
   const transicao = resolverTransicao(relatorio.estado, ACOES.REENVIAR, ator.perfil);
 
+  // Guarda: toda observação da reprovação precisa estar declarada (atendida/não
+  // atendida) ou ter uma justificativa do colaborador antes do reenvio.
+  const pendentes = await prisma.observacao.count({
+    where: {
+      relatorioId: id,
+      tipo: 'REPROVACAO_MEDICAO',
+      statusColaborador: 'PENDENTE',
+      OR: [{ declaracao: null }, { declaracao: '' }],
+    },
+  });
+  if (pendentes > 0) {
+    const e = new Error('Declare cada observação como atendida/não atendida, ou justifique-a, antes de reenviar.');
+    e.status = 400;
+    throw e;
+  }
+
   const atualizado = await prisma.$transaction(async (tx) => {
     const novaVersao = relatorio.versaoAtual + 1;
 
