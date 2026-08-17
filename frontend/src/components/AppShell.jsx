@@ -16,6 +16,7 @@ const ICONES = {
   relatorios: ['M4 6h6l2 2h8v11H4z'],
   convites: ['M3 6h18v12H3z', 'M3 7l9 6 9-6'],
   solicitacoes: ['M4 5h16v10H8l-4 4z'],
+  dosagem: ['M9 3h6', 'M10 3v6l-5 10a1 1 0 001 1.5h12a1 1 0 001-1.5L14 9V3'],
 };
 
 export function AppShell({ children }) {
@@ -55,11 +56,13 @@ export function AppShell({ children }) {
               <NavLink to="/coordenador" className={linkCls}><Icone d={ICONES.medicoes} /> Medições</NavLink>
               <NavLink to="/convites" className={linkCls}><Icone d={ICONES.convites} /> Convites</NavLink>
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
+              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Dosagem</NavLink>
             </>
           ) : (
             <>
               <NavLink to="/relatorios" className={linkCls}><Icone d={ICONES.medicoes} /> Medições</NavLink>
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
+              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Dosagem</NavLink>
             </>
           )}
         </nav>

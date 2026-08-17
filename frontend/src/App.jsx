@@ -11,6 +11,9 @@ import { PainelCoordenador } from './pages/PainelCoordenador';
 import { DetalheRelatorio } from './pages/DetalheRelatorio';
 import { Convites } from './pages/Convites';
 import { Solicitacoes } from './pages/Solicitacoes';
+import { Dosagem } from './pages/Dosagem';
+import { NovoDosagem } from './pages/NovoDosagem';
+import { DetalheDosagem } from './pages/DetalheDosagem';
 
 // Exige sessão; opcionalmente restringe a um perfil.
 function Protegido({ children, perfil }) {
@@ -53,6 +56,11 @@ export default function App() {
 
           {/* Solicitações — ambos os perfis */}
           <Route path="/solicitacoes" element={<Protegido><Solicitacoes /></Protegido>} />
+
+          {/* Dosagem e caracterização de material — ambos veem; só o colaborador cadastra/edita */}
+          <Route path="/dosagem" element={<Protegido><Dosagem /></Protegido>} />
+          <Route path="/dosagem/novo" element={<Protegido perfil="USUARIO"><NovoDosagem /></Protegido>} />
+          <Route path="/dosagem/:id" element={<Protegido><DetalheDosagem /></Protegido>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

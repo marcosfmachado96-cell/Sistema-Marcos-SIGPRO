@@ -114,6 +114,29 @@ export const api = {
     a.remove();
     URL.revokeObjectURL(url);
   },
+
+  // Projetos de dosagem e caracterização de material
+  listarDosagem: () => req('GET', '/dosagem'),
+  criarDosagem: (dados) => req('POST', '/dosagem', dados),
+  detalharDosagem: (id) => req('GET', `/dosagem/${id}`),
+  atualizarDosagem: (id, dados) => req('PATCH', `/dosagem/${id}`, dados),
+  excluirDosagem: (id) => req('DELETE', `/dosagem/${id}`),
+  anexarDosagem: (id, arquivos) => req('POST', `/dosagem/${id}/anexos`, formData({ arquivos }), true),
+  baixarAnexoDosagem: async (anexoId, nomeArquivo) => {
+    const resp = await fetch(`${BASE}/dosagem/anexos/${anexoId}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!resp.ok) throw new Error('Falha ao baixar o anexo.');
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo || 'anexo';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
 };
 
 function formData({ arquivos, arquivo, observacoes, descricoes }) {

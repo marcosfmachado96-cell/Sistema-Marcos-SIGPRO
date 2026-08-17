@@ -7,6 +7,7 @@ const { auth, convites } = require('../controllers/auth.controller');
 const relatorios = require('../controllers/relatorios.controller');
 const anexos = require('../controllers/anexos.controller');
 const solicitacoes = require('../controllers/solicitacoes.controller');
+const dosagem = require('../controllers/dosagem.controller');
 
 const router = Router();
 
@@ -53,5 +54,14 @@ router.post('/relatorios/:id/anexos', autenticar, exigirPerfil('USUARIO'), uploa
 router.post('/relatorios/:id/documentacao-fiscal', autenticar, exigirPerfil('USUARIO'), uploadDocFiscal.array('arquivos'), anexos.incluirDocumentacaoFiscal);
 router.post('/relatorios/:id/atesto', autenticar, exigirPerfil('COORDENADOR'), upload.single('arquivo'), anexos.registrarAtesto);
 router.get('/anexos/:id/download', autenticar, anexos.download);
+
+// --- Projetos de dosagem e caracterização de material ---
+router.get('/dosagem', autenticar, dosagem.listar);
+router.post('/dosagem', autenticar, exigirPerfil('USUARIO'), dosagem.criar);
+router.get('/dosagem/:id', autenticar, dosagem.detalhar);
+router.patch('/dosagem/:id', autenticar, exigirPerfil('USUARIO'), dosagem.atualizar);
+router.delete('/dosagem/:id', autenticar, exigirPerfil('USUARIO'), dosagem.excluir);
+router.post('/dosagem/:id/anexos', autenticar, exigirPerfil('USUARIO'), upload.array('arquivos'), dosagem.anexar);
+router.get('/dosagem/anexos/:id/download', autenticar, dosagem.download);
 
 module.exports = router;

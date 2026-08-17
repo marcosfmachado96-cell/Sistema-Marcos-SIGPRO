@@ -95,6 +95,9 @@ model Usuario {
   solicitacoesRespondidas Solicitacao[] @relation("RespondeuSolicitacao")
   logs             LogAuditoria[]
   redefinicoesSenha RedefinicaoSenha[]
+  projetosDosagem      ProjetoDosagem[] @relation("AutorProjetoDosagem")
+  projetosDosagemExcluidos ProjetoDosagem[] @relation("ExcluiuProjetoDosagem")
+  anexosDosagemEnviados AnexoDosagem[] @relation("AnexoDosagemPor")
 
   @@map("usuarios")
 }
@@ -334,6 +337,49 @@ model Solicitacao {
   @@index([autorId])
   @@index([status])
   @@map("solicitacoes")
+}
+
+// ----------------------------------------------------------------------------
+// Projetos de dosagem e caracterização de material (revestimento primário)
+// ----------------------------------------------------------------------------
+
+model ProjetoDosagem {
+  id          String   @id @default(uuid())
+  descricao   String
+  contrato    String
+  rodovias    String[] // ex.: ["PR-408", "PR-410"]
+
+  autorId     String
+  autor       Usuario  @relation("AutorProjetoDosagem", fields: [autorId], references: [id])
+
+  excluidoEm    DateTime?
+  excluidoPorId String?
+  excluidoPor   Usuario? @relation("ExcluiuProjetoDosagem", fields: [excluidoPorId], references: [id])
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  anexos AnexoDosagem[]
+
+  @@index([autorId])
+  @@map("projetos_dosagem")
+}
+
+model AnexoDosagem {
+  id               String   @id @default(uuid())
+  projetoDosagemId String
+  projetoDosagem   ProjetoDosagem @relation(fields: [projetoDosagemId], references: [id])
+
+  nomeArquivo  String
+  chaveS3      String
+  tamanho      Int
+  contentType  String
+  enviadoPorId String
+  enviadoPor   Usuario  @relation("AnexoDosagemPor", fields: [enviadoPorId], references: [id])
+  criadoEm     DateTime @default(now())
+
+  @@index([projetoDosagemId])
+  @@map("anexos_dosagem")
 }
 
 model LogAuditoria {
