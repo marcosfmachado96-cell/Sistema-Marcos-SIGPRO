@@ -18,7 +18,7 @@ export function Dosagem() {
       <div className="pagina-cab">
         <div>
           <div className="eyebrow">Revestimento primário</div>
-          <h1>Dosagem e caracterização de material</h1>
+          <h1>Projeto de Dosagem e caracterização de material</h1>
           <div className="descricao">
             {ehCoordenador
               ? 'Projetos de dosagem e caracterização cadastrados pelos colaboradores.'

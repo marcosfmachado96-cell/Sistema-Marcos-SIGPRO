@@ -44,8 +44,8 @@ export function NovoDosagem() {
       <div className="pagina-cab">
         <div>
           <div className="eyebrow">Revestimento primário</div>
-          <h1>Novo projeto de dosagem</h1>
-          <div className="descricao">Dosagem e caracterização de material.</div>
+          <h1>Novo Projeto de Dosagem</h1>
+          <div className="descricao">Projeto de Dosagem e caracterização de material.</div>
         </div>
       </div>
 

@@ -56,13 +56,13 @@ export function AppShell({ children }) {
               <NavLink to="/coordenador" className={linkCls}><Icone d={ICONES.medicoes} /> Medições</NavLink>
               <NavLink to="/convites" className={linkCls}><Icone d={ICONES.convites} /> Convites</NavLink>
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
-              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Dosagem</NavLink>
+              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Projeto de Dosagem</NavLink>
             </>
           ) : (
             <>
               <NavLink to="/relatorios" className={linkCls}><Icone d={ICONES.medicoes} /> Medições</NavLink>
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
-              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Dosagem</NavLink>
+              <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Projeto de Dosagem</NavLink>
             </>
           )}
         </nav>
