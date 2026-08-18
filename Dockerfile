@@ -22,6 +22,8 @@ COPY src ./src
 COPY scripts ./scripts
 # build do frontend, servido pelo próprio backend
 COPY --from=frontend /app/frontend/dist ./frontend/dist
+# malha rodoviária: lida pelo backend do disco (src/lib/malha.js), não faz parte do bundle do Vite
+COPY frontend/public/malha-rodoviaria.json ./frontend/public/malha-rodoviaria.json
 
 ENV SERVE_FRONTEND=true
 ENV FRONTEND_DIST=/app/frontend/dist
