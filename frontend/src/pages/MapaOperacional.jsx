@@ -233,70 +233,67 @@ export function MapaOperacional() {
 
       {erro && <div className="alerta alerta-erro" style={{ marginBottom: 16 }}>{erro}</div>}
 
-      <div className="mapa-layout">
-        <div className="card mapa-card">
-          <div ref={containerRef} style={{ height: '620px', width: '100%' }} />
+      <div className="card mapa-card">
+        <div ref={containerRef} style={{ height: '560px', width: '100%' }} />
+      </div>
+
+      <div className="card card-pad mapa-lista">
+        <h3>Notas de serviço {notas ? `(${notasFiltradas.length})` : ''}</h3>
+
+        <div className="mapa-filtros">
+          <div className="campo">
+            <label>Contrato</label>
+            <select className="input" value={filtroContrato} onChange={(e) => setFiltroContrato(e.target.value)}>
+              <option value="">Todos</option>
+              {contratos.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="campo">
+            <label>Rodovia</label>
+            <select className="input" value={filtroRodovia} onChange={(e) => setFiltroRodovia(e.target.value)}>
+              <option value="">Todas</option>
+              {rodovias.map((r) => <option key={r} value={r}>PR-{r}</option>)}
+            </select>
+          </div>
+          <div className="campo">
+            <label>Status</label>
+            <select className="input" value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
+              <option value="">Todos</option>
+              {statusDisponiveis.map((s) => <option key={s.rotulo} value={s.rotulo}>{s.rotulo}</option>)}
+            </select>
+          </div>
         </div>
 
-        <div className="card card-pad mapa-lista">
-          <h3>Notas de serviço {notas ? `(${notasFiltradas.length})` : ''}</h3>
-
-          <div className="mapa-filtros">
-            <div className="campo">
-              <label>Contrato</label>
-              <select className="input" value={filtroContrato} onChange={(e) => setFiltroContrato(e.target.value)}>
-                <option value="">Todos</option>
-                {contratos.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="campo">
-              <label>Rodovia</label>
-              <select className="input" value={filtroRodovia} onChange={(e) => setFiltroRodovia(e.target.value)}>
-                <option value="">Todas</option>
-                {rodovias.map((r) => <option key={r} value={r}>PR-{r}</option>)}
-              </select>
-            </div>
-            <div className="campo">
-              <label>Status</label>
-              <select className="input" value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
-                <option value="">Todos</option>
-                {statusDisponiveis.map((s) => <option key={s.rotulo} value={s.rotulo}>{s.rotulo}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="mapa-lista-tabela">
-            {!notas && <div className="carregando">Carregando…</div>}
-            {notas && notasFiltradas.length === 0 && (
-              <p className="descricao">Nenhuma nota encontrada{notas.length > 0 ? ' com os filtros atuais' : ''}.</p>
-            )}
-            {notasFiltradas.length > 0 && (
-              <table className="tabela">
-                <thead>
-                  <tr>
-                    <th>Nº</th>
-                    <th>Rodovia/km</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notasFiltradas.map((n) => {
-                    const s = statusNota(n);
-                    return (
-                      <tr key={n.id} onClick={() => navigate(`/mapa-operacional/${n.id}`)}>
-                        <td>
-                          {n.numero}
-                          <div className="descricao" style={{ fontSize: 12 }}>{n.contrato}</div>
-                        </td>
-                        <td>PR-{n.rodovia}<br />km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
-                        <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+        <div className="mapa-lista-tabela">
+          {!notas && <div className="carregando">Carregando…</div>}
+          {notas && notasFiltradas.length === 0 && (
+            <p className="descricao">Nenhuma nota encontrada{notas.length > 0 ? ' com os filtros atuais' : ''}.</p>
+          )}
+          {notasFiltradas.length > 0 && (
+            <table className="tabela">
+              <thead>
+                <tr>
+                  <th>Nº</th>
+                  <th>Contrato</th>
+                  <th>Rodovia/km</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {notasFiltradas.map((n) => {
+                  const s = statusNota(n);
+                  return (
+                    <tr key={n.id} onClick={() => navigate(`/mapa-operacional/${n.id}`)}>
+                      <td>{n.numero}</td>
+                      <td>{n.contrato}</td>
+                      <td>PR-{n.rodovia} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
+                      <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 

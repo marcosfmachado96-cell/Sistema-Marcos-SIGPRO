@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { fmtDataHora } from '../util';
+import { fmtData, fmtDataHora } from '../util';
 
 const ROTULO_TIPO = {
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
@@ -184,7 +184,7 @@ export function DetalheNotaServico() {
               <div className="tl-acao">
                 <span className={`badge ${BADGE_TIPO[ev.tipo] || 'badge-azul'}`}>{ROTULO_TIPO[ev.tipo] || ev.tipo}</span>
               </div>
-              <div className="tl-meta">{ev.autor?.nome} · {fmtDataHora(ev.data)}</div>
+              <div className="tl-meta">{ev.autor?.nome} · Ocorrido em {fmtData(ev.data)} · Registrado em {fmtDataHora(ev.criadoEm)}</div>
               {ev.texto && <div style={{ marginTop: 4 }}>{ev.texto}</div>}
               {(ev.anexos || []).length > 0 && (
                 <ul className="lista-anexos" style={{ marginTop: 6 }}>
