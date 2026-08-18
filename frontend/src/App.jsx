@@ -65,9 +65,9 @@ export default function App() {
           <Route path="/dosagem/novo" element={<Protegido perfil="USUARIO"><NovoDosagem /></Protegido>} />
           <Route path="/dosagem/:id" element={<Protegido><DetalheDosagem /></Protegido>} />
 
-          {/* Mapa Operacional — visão compartilhada; só o colaborador cadastra/edita */}
+          {/* Mapa Operacional — função à parte das medições; qualquer perfil cadastra/mantém as próprias notas */}
           <Route path="/mapa-operacional" element={<Protegido><MapaOperacional /></Protegido>} />
-          <Route path="/mapa-operacional/novo" element={<Protegido perfil="USUARIO"><NovaNotaServico /></Protegido>} />
+          <Route path="/mapa-operacional/novo" element={<Protegido><NovaNotaServico /></Protegido>} />
           <Route path="/mapa-operacional/:id" element={<Protegido><DetalheNotaServico /></Protegido>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

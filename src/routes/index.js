@@ -66,14 +66,16 @@ router.post('/dosagem/:id/anexos', autenticar, exigirPerfil('USUARIO'), upload.a
 router.get('/dosagem/anexos/:id/download', autenticar, dosagem.download);
 
 // --- Mapa Operacional (notas de serviço por rodovia/km) ---
+// Função à parte do fluxo de medições: qualquer perfil autenticado cadastra
+// e mantém as próprias notas.
 router.get('/mapa-operacional/rodovias', autenticar, notaServico.rodovias);
 router.get('/notas-servico', autenticar, notaServico.listar);
-router.post('/notas-servico', autenticar, exigirPerfil('USUARIO'), notaServico.criar);
+router.post('/notas-servico', autenticar, notaServico.criar);
 router.get('/notas-servico/:id', autenticar, notaServico.detalhar);
-router.patch('/notas-servico/:id', autenticar, exigirPerfil('USUARIO'), notaServico.atualizar);
-router.delete('/notas-servico/:id', autenticar, exigirPerfil('USUARIO'), notaServico.excluir);
-router.post('/notas-servico/:id/eventos', autenticar, exigirPerfil('USUARIO'), notaServico.adicionarEvento);
-router.post('/notas-servico/eventos/:eventoId/anexos', autenticar, exigirPerfil('USUARIO'), uploadEvento.array('arquivos'), notaServico.anexarEvento);
+router.patch('/notas-servico/:id', autenticar, notaServico.atualizar);
+router.delete('/notas-servico/:id', autenticar, notaServico.excluir);
+router.post('/notas-servico/:id/eventos', autenticar, notaServico.adicionarEvento);
+router.post('/notas-servico/eventos/:eventoId/anexos', autenticar, uploadEvento.array('arquivos'), notaServico.anexarEvento);
 router.get('/notas-servico/anexos/:id/download', autenticar, notaServico.download);
 
 module.exports = router;

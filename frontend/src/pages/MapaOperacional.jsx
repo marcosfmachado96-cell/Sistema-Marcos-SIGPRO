@@ -54,10 +54,12 @@ export function MapaOperacional() {
       .then((r) => r.json())
       .then((geojson) => {
         L.geoJSON(geojson, {
-          style: { color: '#8b93a1', weight: 2, opacity: 0.6 },
+          style: { color: '#e2571e', weight: 3, opacity: 0.85 },
           onEachFeature: (f, layer) => {
             const p = f.properties;
             layer.bindPopup(`<b>PR-${p.rodovia}</b><br>${p.de || ''} — ${p.para || ''}<br>km ${p.kmInicial} a ${p.kmFinal}`);
+            layer.on('mouseover', () => layer.setStyle({ weight: 5, color: '#ffb020' }));
+            layer.on('mouseout', () => layer.setStyle({ weight: 3, color: '#e2571e' }));
           },
         }).addTo(mapa);
       })

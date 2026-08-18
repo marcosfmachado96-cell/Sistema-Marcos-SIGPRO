@@ -1,7 +1,7 @@
 // Mapa Operacional: notas de serviço por rodovia/km, com histórico livre de
 // eventos (mobilização, desmobilização, ocorrência, paralisação, retomada,
-// andamento). Qualquer colaborador cadastra e mantém as próprias notas; o
-// coordenador acompanha tudo no mapa, sem editar.
+// andamento). Função à parte do fluxo de medições: qualquer perfil
+// autenticado cadastra e mantém as próprias notas.
 const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const storage = require('../lib/storage');
@@ -24,15 +24,12 @@ async function obterNota(id) {
 }
 
 function exigirAutor(nota, ator) {
-  if (ator.perfil !== 'USUARIO' || nota.autorId !== ator.id) {
+  if (nota.autorId !== ator.id) {
     const e = new Error('Apenas o autor pode alterar esta nota de serviço.'); e.status = 403; throw e;
   }
 }
 
 async function criar(dados, ator) {
-  if (ator.perfil !== 'USUARIO') {
-    const e = new Error('Apenas colaboradores cadastram notas de serviço.'); e.status = 403; throw e;
-  }
   const { numero, contrato, descricao } = dados;
   if (!numero?.trim() || !contrato?.trim() || !descricao?.trim()) {
     const e = new Error('Informe número, contrato e descrição.'); e.status = 400; throw e;
