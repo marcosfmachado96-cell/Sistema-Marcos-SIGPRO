@@ -137,6 +137,32 @@ export const api = {
     a.remove();
     URL.revokeObjectURL(url);
   },
+
+  // Mapa Operacional — notas de serviço por rodovia/km e histórico de eventos
+  rodoviasMapa: () => req('GET', '/mapa-operacional/rodovias'),
+  listarNotasServico: () => req('GET', '/notas-servico'),
+  criarNotaServico: (dados) => req('POST', '/notas-servico', dados),
+  detalharNotaServico: (id) => req('GET', `/notas-servico/${id}`),
+  atualizarNotaServico: (id, dados) => req('PATCH', `/notas-servico/${id}`, dados),
+  excluirNotaServico: (id) => req('DELETE', `/notas-servico/${id}`),
+  adicionarEventoNota: (id, dados) => req('POST', `/notas-servico/${id}/eventos`, dados),
+  anexarEventoNota: (eventoId, arquivos) =>
+    req('POST', `/notas-servico/eventos/${eventoId}/anexos`, formData({ arquivos }), true),
+  baixarAnexoEventoNota: async (anexoId, nomeArquivo) => {
+    const resp = await fetch(`${BASE}/notas-servico/anexos/${anexoId}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!resp.ok) throw new Error('Falha ao baixar o anexo.');
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo || 'anexo';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
 };
 
 function formData({ arquivos, arquivo, observacoes, descricoes }) {

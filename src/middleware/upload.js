@@ -25,5 +25,12 @@ const uploadDocFiscal = criarUpload(
   'PDF, planilhas (xlsx, xls, csv) e compactados (zip, rar)'
 );
 
+// Eventos do Mapa Operacional: além dos tipos padrão, aceita fotos.
+const uploadEvento = criarUpload(
+  [...env.upload.mimesPermitidos, ...env.upload.mimesImagem],
+  'PDF, planilhas (xlsx, xls, csv) e fotos (jpg, png, webp)'
+);
+
 module.exports = upload;
 module.exports.uploadDocFiscal = uploadDocFiscal;
+module.exports.uploadEvento = uploadEvento;

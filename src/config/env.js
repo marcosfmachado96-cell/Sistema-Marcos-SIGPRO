@@ -104,6 +104,8 @@ module.exports = {
       'application/x-rar-compressed',
       'application/x-rar',
     ],
+    // Fotos — aceitas nos eventos do Mapa Operacional (ocorrências, andamento etc.).
+    mimesImagem: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'],
   },
 
   // Análise por IA (Etapa B). Sem chave, opera em modo de simulação.

@@ -14,6 +14,9 @@ import { Solicitacoes } from './pages/Solicitacoes';
 import { Dosagem } from './pages/Dosagem';
 import { NovoDosagem } from './pages/NovoDosagem';
 import { DetalheDosagem } from './pages/DetalheDosagem';
+import { MapaOperacional } from './pages/MapaOperacional';
+import { NovaNotaServico } from './pages/NovaNotaServico';
+import { DetalheNotaServico } from './pages/DetalheNotaServico';
 
 // Exige sessão; opcionalmente restringe a um perfil.
 function Protegido({ children, perfil }) {
@@ -61,6 +64,11 @@ export default function App() {
           <Route path="/dosagem" element={<Protegido><Dosagem /></Protegido>} />
           <Route path="/dosagem/novo" element={<Protegido perfil="USUARIO"><NovoDosagem /></Protegido>} />
           <Route path="/dosagem/:id" element={<Protegido><DetalheDosagem /></Protegido>} />
+
+          {/* Mapa Operacional — visão compartilhada; só o colaborador cadastra/edita */}
+          <Route path="/mapa-operacional" element={<Protegido><MapaOperacional /></Protegido>} />
+          <Route path="/mapa-operacional/novo" element={<Protegido perfil="USUARIO"><NovaNotaServico /></Protegido>} />
+          <Route path="/mapa-operacional/:id" element={<Protegido><DetalheNotaServico /></Protegido>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

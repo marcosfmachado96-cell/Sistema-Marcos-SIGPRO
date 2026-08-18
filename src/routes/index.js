@@ -2,12 +2,13 @@
 const { Router } = require('express');
 const { autenticar, exigirPerfil } = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const { uploadDocFiscal } = upload;
+const { uploadDocFiscal, uploadEvento } = upload;
 const { auth, convites } = require('../controllers/auth.controller');
 const relatorios = require('../controllers/relatorios.controller');
 const anexos = require('../controllers/anexos.controller');
 const solicitacoes = require('../controllers/solicitacoes.controller');
 const dosagem = require('../controllers/dosagem.controller');
+const notaServico = require('../controllers/notaServico.controller');
 
 const router = Router();
 
@@ -63,5 +64,16 @@ router.patch('/dosagem/:id', autenticar, exigirPerfil('USUARIO'), dosagem.atuali
 router.delete('/dosagem/:id', autenticar, exigirPerfil('USUARIO'), dosagem.excluir);
 router.post('/dosagem/:id/anexos', autenticar, exigirPerfil('USUARIO'), upload.array('arquivos'), dosagem.anexar);
 router.get('/dosagem/anexos/:id/download', autenticar, dosagem.download);
+
+// --- Mapa Operacional (notas de serviço por rodovia/km) ---
+router.get('/mapa-operacional/rodovias', autenticar, notaServico.rodovias);
+router.get('/notas-servico', autenticar, notaServico.listar);
+router.post('/notas-servico', autenticar, exigirPerfil('USUARIO'), notaServico.criar);
+router.get('/notas-servico/:id', autenticar, notaServico.detalhar);
+router.patch('/notas-servico/:id', autenticar, exigirPerfil('USUARIO'), notaServico.atualizar);
+router.delete('/notas-servico/:id', autenticar, exigirPerfil('USUARIO'), notaServico.excluir);
+router.post('/notas-servico/:id/eventos', autenticar, exigirPerfil('USUARIO'), notaServico.adicionarEvento);
+router.post('/notas-servico/eventos/:eventoId/anexos', autenticar, exigirPerfil('USUARIO'), uploadEvento.array('arquivos'), notaServico.anexarEvento);
+router.get('/notas-servico/anexos/:id/download', autenticar, notaServico.download);
 
 module.exports = router;

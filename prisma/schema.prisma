@@ -98,6 +98,10 @@ model Usuario {
   projetosDosagem      ProjetoDosagem[] @relation("AutorProjetoDosagem")
   projetosDosagemExcluidos ProjetoDosagem[] @relation("ExcluiuProjetoDosagem")
   anexosDosagemEnviados AnexoDosagem[] @relation("AnexoDosagemPor")
+  notasServico          NotaServico[]  @relation("AutorNotaServico")
+  notasServicoExcluidas NotaServico[]  @relation("ExcluiuNotaServico")
+  eventosNotaServico    EventoNotaServico[] @relation("AutorEventoNota")
+  anexosEventoEnviados  AnexoEventoNota[]   @relation("AnexoEventoNotaPor")
 
   @@map("usuarios")
 }
@@ -397,4 +401,84 @@ model LogAuditoria {
 
   @@index([relatorioId])
   @@map("log_auditoria")
+}
+
+// ----------------------------------------------------------------------------
+// Mapa Operacional — notas de serviço por rodovia/km, com histórico de eventos
+// (fluxo livre: qualquer tipo de evento pode ser lançado a qualquer momento).
+// ----------------------------------------------------------------------------
+
+enum TipoEventoNota {
+  MOBILIZACAO
+  DESMOBILIZACAO
+  OCORRENCIA
+  PARALISACAO
+  RETOMADA
+  ANDAMENTO
+}
+
+model NotaServico {
+  id        String  @id @default(uuid())
+  numero    String  // número da nota de serviço emitida
+  contrato  String
+  descricao String
+
+  rodovia   Int      // ex.: 486 (PR-486)
+  kmInicial Decimal  @db.Decimal(7, 2)
+  kmFinal   Decimal  @db.Decimal(7, 2)
+  latitude  Float    // ponto no mapa, calculado a partir de rodovia+kmInicial
+  longitude Float
+
+  autorId String
+  autor   Usuario @relation("AutorNotaServico", fields: [autorId], references: [id])
+
+  excluidoEm    DateTime?
+  excluidoPorId String?
+  excluidoPor   Usuario?  @relation("ExcluiuNotaServico", fields: [excluidoPorId], references: [id])
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  eventos EventoNotaServico[]
+
+  @@index([autorId])
+  @@index([rodovia])
+  @@map("notas_servico")
+}
+
+model EventoNotaServico {
+  id            String @id @default(uuid())
+  notaServicoId String
+  notaServico   NotaServico @relation(fields: [notaServicoId], references: [id])
+
+  tipo  TipoEventoNota
+  data  DateTime
+  texto String?
+
+  autorId String
+  autor   Usuario @relation("AutorEventoNota", fields: [autorId], references: [id])
+
+  criadoEm DateTime @default(now())
+
+  anexos AnexoEventoNota[]
+
+  @@index([notaServicoId])
+  @@map("eventos_nota_servico")
+}
+
+model AnexoEventoNota {
+  id       String @id @default(uuid())
+  eventoId String
+  evento   EventoNotaServico @relation(fields: [eventoId], references: [id])
+
+  nomeArquivo  String
+  chaveS3      String
+  tamanho      Int
+  contentType  String
+  enviadoPorId String
+  enviadoPor   Usuario @relation("AnexoEventoNotaPor", fields: [enviadoPorId], references: [id])
+  criadoEm     DateTime @default(now())
+
+  @@index([eventoId])
+  @@map("anexos_evento_nota")
 }
