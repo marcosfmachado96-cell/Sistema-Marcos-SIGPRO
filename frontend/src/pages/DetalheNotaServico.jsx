@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { fmtData, fmtDataHora, fmtRodovia } from '../util';
+import { CampoContrato } from '../components/CampoContrato';
 
 const ROTULO_TIPO = {
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
@@ -107,7 +108,7 @@ export function DetalheNotaServico() {
             </div>
             <div className="campo">
               <label>Contrato</label>
-              <input className="input" value={form.contrato} onChange={(e) => setForm((f) => ({ ...f, contrato: e.target.value }))} required />
+              <CampoContrato value={form.contrato} onChange={(v) => setForm((f) => ({ ...f, contrato: v }))} required />
             </div>
           </div>
           <div className="campo">

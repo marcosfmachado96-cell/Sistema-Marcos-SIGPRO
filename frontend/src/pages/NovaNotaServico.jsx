@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { fmtRodovia } from '../util';
+import { CampoContrato } from '../components/CampoContrato';
 
 export function NovaNotaServico() {
   const navigate = useNavigate();
@@ -55,8 +56,7 @@ export function NovaNotaServico() {
             </div>
             <div className="campo">
               <label>Contrato</label>
-              <input className="input" value={form.contrato} onChange={(e) => set('contrato', e.target.value)}
-                placeholder="CO 036/2022 DOP" required />
+              <CampoContrato value={form.contrato} onChange={(v) => set('contrato', v)} required />
             </div>
           </div>
           <div className="campo">
