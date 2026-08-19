@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../api';
@@ -107,9 +107,12 @@ function popupNota(nota, rotulo, cor) {
 
 export function MapaOperacional() {
   const navigate = useNavigate();
+  const location = useLocation();
   const mapaRef = useRef(null);
   const containerRef = useRef(null);
   const malhaRef = useRef(new Map());
+  const layersPorNotaRef = useRef(new Map());
+  const destacarIdRef = useRef(location.state?.destacarId || null);
   const [malhaPronta, setMalhaPronta] = useState(false);
   const [notas, setNotas] = useState(null);
   const [erro, setErro] = useState('');
@@ -189,6 +192,7 @@ export function MapaOperacional() {
     const mapa = mapaRef.current;
     if (!mapa || !malhaPronta) return;
     const camada = L.layerGroup().addTo(mapa);
+    const layersPorNota = new Map();
     for (const nota of notasFiltradas) {
       const { rotulo, cor } = statusNota(nota);
       const kmA = Number(nota.kmInicial);
@@ -215,9 +219,31 @@ export function MapaOperacional() {
         const link = document.querySelector(`a[data-id="${nota.id}"]`);
         if (link) link.onclick = (ev) => { ev.preventDefault(); navigate(`/mapa-operacional/${nota.id}`); };
       });
+      layersPorNota.set(nota.id, { grupo, centro: grupo.getBounds().getCenter() });
     }
+    layersPorNotaRef.current = layersPorNota;
+
+    // Nota recém-cadastrada (veio da tela de criação): centraliza e abre o popup uma única vez.
+    if (destacarIdRef.current && layersPorNota.has(destacarIdRef.current)) {
+      const { grupo, centro } = layersPorNota.get(destacarIdRef.current);
+      mapa.setView(centro, Math.max(mapa.getZoom(), 13));
+      grupo.openPopup();
+      destacarIdRef.current = null;
+    }
+
     return () => { mapa.removeLayer(camada); };
   }, [notasFiltradas, malhaPronta, navigate]);
+
+  // Foca uma nota já renderizada no mapa (usado pela tabela) — centraliza,
+  // abre o popup com a rodovia/km e rola a tela até o mapa.
+  function focarNota(id) {
+    const item = layersPorNotaRef.current.get(id);
+    const mapa = mapaRef.current;
+    if (!item || !mapa) return;
+    mapa.setView(item.centro, Math.max(mapa.getZoom(), 13));
+    item.grupo.openPopup();
+    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   return (
     <>
@@ -284,7 +310,7 @@ export function MapaOperacional() {
                 {notasFiltradas.map((n) => {
                   const s = statusNota(n);
                   return (
-                    <tr key={n.id} onClick={() => navigate(`/mapa-operacional/${n.id}`)}>
+                    <tr key={n.id} onClick={() => focarNota(n.id)}>
                       <td>{n.numero}</td>
                       <td>{n.contrato}</td>
                       <td>{fmtRodovia(n.rodovia)} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>

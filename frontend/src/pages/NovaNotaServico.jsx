@@ -25,7 +25,7 @@ export function NovaNotaServico() {
         kmInicial: Number(form.kmInicial),
         kmFinal: Number(form.kmFinal || form.kmInicial),
       });
-      navigate(`/mapa-operacional/${n.id}`);
+      navigate('/mapa-operacional', { state: { destacarId: n.id } });
     } catch (err) {
       setErro(err.message);
     } finally {
