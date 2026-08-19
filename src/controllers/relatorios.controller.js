@@ -22,12 +22,9 @@ module.exports = {
     try { res.json(await service.historico(req.params.id, req.usuario)); } catch (e) { next(e); }
   },
 
-  // Reprovação e correção documental recebem uma lista de observações numeradas.
+  // Reprovação recebe uma lista de observações numeradas.
   async reprovar(req, res, next) {
     try { res.json(await service.reprovar(req.params.id, req.body.itens, req.usuario)); } catch (e) { next(e); }
-  },
-  async solicitarCorrecao(req, res, next) {
-    try { res.json(await service.solicitarCorrecao(req.params.id, req.body.itens, req.usuario)); } catch (e) { next(e); }
   },
 
   async reenviar(req, res, next) {

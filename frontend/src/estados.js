@@ -21,20 +21,18 @@ export const BADGE = {
   CONCLUIDO: 'badge-grafite',
 };
 
-// Trilha principal do pipeline (caminho feliz). REPROVADO e CORRECAO_DOCUMENTAL
-// são desvios, exibidos como anotação fora da trilha.
+// Trilha principal do pipeline (caminho feliz) — aprovar já conclui o
+// relatório, sem etapa de atesto contábil. REPROVADO é um desvio, exibido
+// como anotação fora da trilha.
 export const TRILHA = [
   'ENVIADO',
   'EM_ANALISE',
-  'APROVADO',
-  'AGUARDANDO_ATESTO',
   'CONCLUIDO',
 ];
 
 // Para posicionar um estado de desvio na trilha.
 export const ANCORA_DESVIO = {
   REPROVADO: 'EM_ANALISE',
-  CORRECAO_DOCUMENTAL: 'AGUARDANDO_ATESTO',
 };
 
 export function rotulo(estado) {

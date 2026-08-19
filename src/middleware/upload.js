@@ -16,14 +16,8 @@ function criarUpload(mimesPermitidos, descricaoTipos) {
   });
 }
 
-// Padrão: PDF e planilhas (medição, relatório assinado, atesto).
+// Padrão: PDF e planilhas (medição, relatório assinado).
 const upload = criarUpload(env.upload.mimesPermitidos, 'PDF e planilhas (xlsx, xls, csv)');
-
-// Documentação fiscal: além dos tipos acima, aceita compactados (zip, rar).
-const uploadDocFiscal = criarUpload(
-  [...env.upload.mimesPermitidos, ...env.upload.mimesCompactados],
-  'PDF, planilhas (xlsx, xls, csv) e compactados (zip, rar)'
-);
 
 // Eventos do Mapa Operacional: além dos tipos padrão, aceita fotos.
 const uploadEvento = criarUpload(
@@ -32,5 +26,4 @@ const uploadEvento = criarUpload(
 );
 
 module.exports = upload;
-module.exports.uploadDocFiscal = uploadDocFiscal;
 module.exports.uploadEvento = uploadEvento;

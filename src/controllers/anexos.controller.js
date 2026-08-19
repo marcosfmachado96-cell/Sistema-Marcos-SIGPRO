@@ -1,4 +1,4 @@
-// Controller de anexos — upload de medição, documentação fiscal, atesto e download.
+// Controller de anexos — upload de medição, aprovação com relatório assinado e download.
 const service = require('../services/anexos.service');
 
 module.exports = {
@@ -10,18 +10,6 @@ module.exports = {
         try { descricoes = JSON.parse(req.body.descricoes); } catch { descricoes = []; }
       }
       res.status(201).json(await service.anexarMedicao(req.params.id, req.files, req.usuario, descricoes));
-    } catch (e) { next(e); }
-  },
-
-  async incluirDocumentacaoFiscal(req, res, next) {
-    try {
-      res.json(await service.incluirDocumentacaoFiscal(req.params.id, req.files, req.usuario));
-    } catch (e) { next(e); }
-  },
-
-  async registrarAtesto(req, res, next) {
-    try {
-      res.json(await service.registrarAtesto(req.params.id, req.file, req.body.observacoes, req.usuario));
     } catch (e) { next(e); }
   },
 

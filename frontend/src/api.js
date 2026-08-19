@@ -73,11 +73,10 @@ export const api = {
   historico: (id) => req('GET', `/relatorios/${id}/historico`),
   excluirRelatorio: (id) => req('DELETE', `/relatorios/${id}`),
 
-  // Aprovação exige o relatório assinado (multipart, campo 'arquivo').
+  // Aprovação exige o relatório assinado (multipart, campo 'arquivo') e já conclui o relatório.
   aprovar: (id, arquivo) => req('POST', `/relatorios/${id}/aprovar`, formData({ arquivo }), true),
-  // Reprovação e correção recebem uma lista de observações numeradas.
+  // Reprovação recebe uma lista de observações numeradas.
   reprovar: (id, itens) => req('POST', `/relatorios/${id}/reprovar`, { itens }),
-  correcaoDocumental: (id, itens) => req('POST', `/relatorios/${id}/correcao-documental`, { itens }),
   reenviar: (id, dados) => req('POST', `/relatorios/${id}/reenviar`, dados),
   reabrir: (id, texto) => req('POST', `/relatorios/${id}/reabrir`, { texto }),
 
@@ -94,9 +93,6 @@ export const api = {
   // — obrigatório para planilhas (xlsx/xls), que exigem um rótulo do conteúdo.
   anexarMedicao: (id, arquivos, descricoes) =>
     req('POST', `/relatorios/${id}/anexos`, formData({ arquivos, descricoes }), true),
-  incluirDocFiscal: (id, arquivos) => req('POST', `/relatorios/${id}/documentacao-fiscal`, formData({ arquivos }), true),
-  registrarAtesto: (id, arquivo, observacoes) =>
-    req('POST', `/relatorios/${id}/atesto`, formData({ arquivo, observacoes }), true),
 
   // Download autenticado: busca com o token e salva o arquivo via blob.
   baixarAnexo: async (anexoId, nomeArquivo) => {

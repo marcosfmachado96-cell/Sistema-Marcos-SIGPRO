@@ -1,9 +1,7 @@
 // Serviço de anexos. Concentra as operações que envolvem arquivos e que, em
 // alguns casos, disparam transições da máquina de estados:
 //  - anexar anexos de MEDIÇÃO (sem transição; só antes da aprovação)
-//  - incluir DOCUMENTAÇÃO FISCAL (APROVADO/CORRECAO_DOCUMENTAL -> AGUARDANDO_ATESTO)
-//    com e-mail automático ao financeiro (links assinados)
-//  - registrar o ATESTO contábil (AGUARDANDO_ATESTO -> CONCLUIDO)
+//  - aprovar com relatório assinado (EM_ANALISE -> CONCLUIDO)
 //  - download seguro, sempre verificando relatório + perfil
 //
 // As guardas de estado/perfil são delegadas à máquina de estados
@@ -12,9 +10,7 @@
 const prisma = require('../lib/prisma');
 const audit = require('../lib/audit');
 const storage = require('../lib/storage');
-const notificacoes = require('../lib/notificacoes');
 const rel = require('./relatorios.service');
-const env = require('../config/env');
 const { ESTADOS, ACOES, resolverTransicao } = require('../domain/stateMachine');
 
 // Estados em que o autor ainda pode anexar anexos de medição.
@@ -151,86 +147,6 @@ async function anexarMedicao(id, arquivos, ator, descricoes = []) {
 }
 
 // ----------------------------------------------------------------------------
-// Documentação fiscal -> AGUARDANDO_ATESTO + e-mail ao financeiro (com links)
-// ----------------------------------------------------------------------------
-async function incluirDocumentacaoFiscal(id, arquivos, ator) {
-  if (!arquivos || arquivos.length === 0) {
-    const e = new Error('Nenhum documento fiscal enviado.'); e.status = 400; throw e;
-  }
-  const relatorio = await rel.obterRelatorio(id);
-  rel.autorizarAcesso(relatorio, ator);
-
-  // Inclusão inicial (a partir de APROVADO) ou reenvio após correção documental.
-  const acao = relatorio.estado === ESTADOS.CORRECAO_DOCUMENTAL
-    ? ACOES.REENVIAR_DOCUMENTOS
-    : ACOES.ANEXAR_DOC_FISCAL;
-  const transicao = resolverTransicao(relatorio.estado, acao, ator.perfil); // valida estado + perfil
-
-  const registros = await persistir(id, 'DOC_FISCAL', arquivos, null, ator.id);
-
-  const { atualizado, anexosCriados } = await prisma.$transaction(async (tx) => {
-    const criados = [];
-    for (const r of registros) criados.push(await tx.anexo.create({ data: r }));
-    const up = await tx.relatorio.update({ where: { id }, data: { estado: transicao.destino } });
-    await audit.registrar(tx, {
-      relatorioId: id, atorId: ator.id, acao,
-      estadoDe: relatorio.estado, estadoPara: transicao.destino,
-      detalhe: { documentos: criados.length },
-    });
-    return { atualizado: up, anexosCriados: criados };
-  });
-
-  // E-mail ao financeiro (best-effort; falha de e-mail não desfaz a transição).
-  try {
-    const links = [];
-    for (const a of anexosCriados) {
-      const url = await storage.linkDownload(a, env.s3.linkEmailExpiraSegundos);
-      links.push({ nome: a.nomeArquivo, url });
-    }
-    await notificacoes.financeiroSolicitaAtesto({
-      relatorio: atualizado, links, replyTo: env.email.replyTo || undefined,
-    });
-  } catch (e) {
-    console.error('Falha ao notificar inclusão de documentação fiscal:', e.message);
-  }
-
-  return atualizado;
-}
-
-// ----------------------------------------------------------------------------
-// Atesto contábil -> CONCLUIDO
-// ----------------------------------------------------------------------------
-async function registrarAtesto(id, arquivo, observacoes, ator) {
-  const relatorio = await rel.obterRelatorio(id);
-  const transicao = resolverTransicao(relatorio.estado, ACOES.INSERIR_ATESTO, ator.perfil);
-
-  let anexoData = null;
-  if (arquivo) {
-    const [reg] = await persistir(id, 'ATESTO', [arquivo], null, ator.id);
-    anexoData = reg;
-  }
-
-  const atualizado = await prisma.$transaction(async (tx) => {
-    let anexoId = null;
-    if (anexoData) {
-      const a = await tx.anexo.create({ data: anexoData });
-      anexoId = a.id;
-    }
-    await tx.atesto.create({
-      data: { relatorioId: id, coordenadorId: ator.id, anexoId, observacoes: observacoes || null },
-    });
-    const up = await tx.relatorio.update({ where: { id }, data: { estado: transicao.destino } });
-    await audit.registrar(tx, {
-      relatorioId: id, atorId: ator.id, acao: ACOES.INSERIR_ATESTO,
-      estadoDe: relatorio.estado, estadoPara: transicao.destino,
-    });
-    return up;
-  });
-
-  return atualizado;
-}
-
-// ----------------------------------------------------------------------------
 // Download seguro — verifica acesso e devolve URL assinada de curta duração
 // ----------------------------------------------------------------------------
 async function prepararDownload(anexoId, ator) {
@@ -245,7 +161,7 @@ async function prepararDownload(anexoId, ator) {
 }
 
 // ----------------------------------------------------------------------------
-// Aprovação com relatório assinado pelo coordenador (EM_ANALISE -> APROVADO)
+// Aprovação com relatório assinado pelo coordenador (EM_ANALISE -> CONCLUIDO)
 // ----------------------------------------------------------------------------
 async function aprovarComAssinatura(id, arquivo, ator) {
   if (!arquivo) { const e = new Error('Anexe o relatório assinado para aprovar.'); e.status = 400; throw e; }
@@ -271,8 +187,6 @@ async function aprovarComAssinatura(id, arquivo, ator) {
 
 module.exports = {
   anexarMedicao,
-  incluirDocumentacaoFiscal,
-  registrarAtesto,
   aprovarComAssinatura,
   prepararDownload,
 };

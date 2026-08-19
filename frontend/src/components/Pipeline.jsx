@@ -9,8 +9,6 @@ export function StatusBadge({ estado }) {
 const ICONES = [
   <path d="M4 12l16-7-7 16-2-6-7-3z" />,                                  // enviado
   <><circle cx="11" cy="11" r="6" /><path d="M20 20l-4-4" /></>,          // em análise
-  <path d="M5 12l4 4 10-10" />,                                            // aprovado
-  <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></>,          // aguardando
   <path d="M6 21V4h11l-2 4 2 4H8" />,                                      // concluído
 ];
 
@@ -29,9 +27,8 @@ export function Pipeline({ estado, versao, datas = {} }) {
   return (
     <div>
       {desvio && (
-        <div className={`alerta ${desvio === 'REPROVADO' ? 'alerta-erro' : 'alerta-ambar'}`} style={{ marginBottom: 12 }}>
-          Este relatório está em <b>{rotulo(desvio)}</b>
-          {desvio === 'REPROVADO' ? ' — aguarda ajuste e reenvio pelo autor.' : ' — aguarda novo envio de documentos contábeis.'}
+        <div className="alerta alerta-erro" style={{ marginBottom: 12 }}>
+          Este relatório está em <b>{rotulo(desvio)}</b> — aguarda ajuste e reenvio pelo autor.
         </div>
       )}
 

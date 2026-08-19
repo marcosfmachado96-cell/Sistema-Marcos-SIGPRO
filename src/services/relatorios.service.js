@@ -105,7 +105,6 @@ async function criar(dados, ator) {
 
 const TIPO_OBSERVACAO_POR_ACAO = {
   [ACOES.REPROVAR]: 'REPROVACAO_MEDICAO',
-  [ACOES.SOLICITAR_CORRECAO_DOCUMENTAL]: 'CORRECAO_DOCUMENTAL',
   [ACOES.REABRIR]: 'REABERTURA',
 };
 
@@ -158,9 +157,9 @@ async function executarTransicao(id, acao, ator, payload = {}) {
   return atualizado;
 }
 
-// Coordenador reabre um processo concluído (ex.: financeiro pede novo documento
-// fiscal). Volta para CORRECAO_DOCUMENTAL — mesma tela em que o autor já anexa
-// documentação fiscal e reenvia; nada do histórico anterior é apagado.
+// Coordenador reabre um processo concluído. Volta para EM_ANALISE — o
+// coordenador reavalia e aprova ou reprova de novo; nada do histórico
+// anterior é apagado.
 function reabrir(id, texto, ator) {
   return executarTransicao(id, ACOES.REABRIR, ator, { texto });
 }
@@ -332,9 +331,6 @@ async function criarObservacoesETransicionar(id, itens, ator, acao, tipo) {
 function reprovar(id, itens, ator) {
   return criarObservacoesETransicionar(id, itens, ator, ACOES.REPROVAR, 'REPROVACAO_MEDICAO');
 }
-function solicitarCorrecao(id, itens, ator) {
-  return criarObservacoesETransicionar(id, itens, ator, ACOES.SOLICITAR_CORRECAO_DOCUMENTAL, 'CORRECAO_DOCUMENTAL');
-}
 
 // Coordenador adiciona uma observação avulsa (mesma rodada corrente).
 async function adicionarObservacao(id, texto, tipo, ator) {
@@ -466,7 +462,6 @@ module.exports = {
   detalhar,
   historico,
   reprovar,
-  solicitarCorrecao,
   adicionarObservacao,
   declararObservacoes,
   confirmarObservacoes,

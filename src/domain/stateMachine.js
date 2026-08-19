@@ -2,6 +2,13 @@
 // Define as transições válidas e as guardas (pré-condições) de cada uma.
 // Qualquer transição fora deste mapa é rejeitada — e toda transição aceita
 // é registrada no log de auditoria pela camada de serviço.
+//
+// APROVADO, AGUARDANDO_ATESTO e CORRECAO_DOCUMENTAL não aparecem mais em
+// nenhuma transição: eram a etapa de atesto contábil (documentação fiscal +
+// atesto do coordenador), eliminada do processo — a aprovação já conclui o
+// relatório. Os valores continuam no enum e nos rótulos do frontend apenas
+// para exibir corretamente o histórico de relatórios concluídos antes dessa
+// mudança.
 
 const ESTADOS = {
   ENVIADO: 'ENVIADO',
@@ -13,7 +20,9 @@ const ESTADOS = {
   CONCLUIDO: 'CONCLUIDO',
 };
 
-// Ações que disparam transições.
+// Ações que disparam transições. ANEXAR_DOC_FISCAL, SOLICITAR_CORRECAO_DOCUMENTAL,
+// REENVIAR_DOCUMENTOS e INSERIR_ATESTO não disparam mais nenhuma transição (ver
+// nota acima) — mantidas aqui só porque ainda aparecem em logs de auditoria antigos.
 const ACOES = {
   CRIAR: 'CRIAR',                       // novo relatório -> ENVIADO
   ENVIAR_PARA_ANALISE: 'ENVIAR_PARA_ANALISE',
@@ -36,28 +45,18 @@ const TRANSICOES = {
     [ACOES.ENVIAR_PARA_ANALISE]: { destino: ESTADOS.EM_ANALISE, perfil: 'USUARIO' },
   },
   [ESTADOS.EM_ANALISE]: {
-    [ACOES.APROVAR]:  { destino: ESTADOS.APROVADO,  perfil: 'COORDENADOR' },
+    // Aprovar já conclui o relatório — sem etapa de atesto contábil.
+    [ACOES.APROVAR]:  { destino: ESTADOS.CONCLUIDO,  perfil: 'COORDENADOR' },
     [ACOES.REPROVAR]: { destino: ESTADOS.REPROVADO, perfil: 'COORDENADOR', exigeObservacao: true },
   },
   [ESTADOS.REPROVADO]: {
     // Ao reenviar, volta para EM_ANALISE preservando o histórico de versões.
     [ACOES.REENVIAR]: { destino: ESTADOS.EM_ANALISE, perfil: 'USUARIO', criaVersao: true },
   },
-  [ESTADOS.APROVADO]: {
-    // Anexar documentação fiscal -> AGUARDANDO_ATESTO + e-mail ao financeiro.
-    [ACOES.ANEXAR_DOC_FISCAL]: { destino: ESTADOS.AGUARDANDO_ATESTO, perfil: 'USUARIO', exigeAnexo: 'DOC_FISCAL' },
-  },
-  [ESTADOS.AGUARDANDO_ATESTO]: {
-    [ACOES.INSERIR_ATESTO]: { destino: ESTADOS.CONCLUIDO, perfil: 'COORDENADOR' },
-    [ACOES.SOLICITAR_CORRECAO_DOCUMENTAL]: { destino: ESTADOS.CORRECAO_DOCUMENTAL, perfil: 'COORDENADOR', exigeObservacao: true },
-  },
-  [ESTADOS.CORRECAO_DOCUMENTAL]: {
-    [ACOES.REENVIAR_DOCUMENTOS]: { destino: ESTADOS.AGUARDANDO_ATESTO, perfil: 'USUARIO', exigeAnexo: 'DOC_FISCAL' },
-  },
   [ESTADOS.CONCLUIDO]: {
-    // Reabertura: volta para CORRECAO_DOCUMENTAL, mesma tela em que o autor já
-    // reenvia documentação fiscal — permite novo atesto sem perder o histórico.
-    [ACOES.REABRIR]: { destino: ESTADOS.CORRECAO_DOCUMENTAL, perfil: 'COORDENADOR', exigeObservacao: true },
+    // Reabertura: volta para EM_ANALISE — o coordenador reavalia e aprova ou
+    // reprova de novo; nada do histórico anterior é apagado.
+    [ACOES.REABRIR]: { destino: ESTADOS.EM_ANALISE, perfil: 'COORDENADOR', exigeObservacao: true },
   },
 };
 

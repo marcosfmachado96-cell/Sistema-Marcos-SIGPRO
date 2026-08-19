@@ -157,6 +157,7 @@ function rotuloAcao(l) {
     CONFIRMAR_OBSERVACOES: 'Coordenador confirmou observações', EXCLUIR_RELATORIO: 'Relatório excluído',
     ANALISE_IA: 'Análise por IA executada', DECIDIR_ANALISE_IA: 'Decisão sobre a análise da IA',
     REABRIR: 'Processo reaberto pelo coordenador',
+    ATESTO_CONTABIL_ELIMINADO: 'Etapa de atesto contábil eliminada do processo — concluído diretamente',
   };
   return m[l.acao] || l.acao;
 }
@@ -172,10 +173,10 @@ function Observacoes({ rel, ehCoordenador, ocupado, acao }) {
   const [conf, setConf] = useState({});      // coordenador: { [id]: confirmacao }
   const [novaObs, setNovaObs] = useState('');
 
-  if (obs.length === 0 && !(ehCoordenador && ['EM_ANALISE', 'AGUARDANDO_ATESTO'].includes(rel.estado))) return null;
+  if (obs.length === 0 && !(ehCoordenador && rel.estado === 'EM_ANALISE')) return null;
 
-  const colaboradorPodeDeclarar = !ehCoordenador && ['REPROVADO', 'CORRECAO_DOCUMENTAL'].includes(rel.estado);
-  const coordenadorPodeConfirmar = ehCoordenador && ['EM_ANALISE', 'AGUARDANDO_ATESTO'].includes(rel.estado);
+  const colaboradorPodeDeclarar = !ehCoordenador && rel.estado === 'REPROVADO';
+  const coordenadorPodeConfirmar = ehCoordenador && rel.estado === 'EM_ANALISE';
 
   function salvarDeclaracoes() {
     const itens = Object.entries(decl).map(([id, v]) => ({ id, status: v.status, declaracao: v.declaracao }));
@@ -285,16 +286,12 @@ function CampoAddObs({ novaObs, setNovaObs, onAdd, ocupado }) {
 // ---------------------------------------------------------------------------
 function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
   const e = rel.estado;
-  const [arquivos, setArquivos] = useState([]);
   const [revArquivos, setRevArquivos] = useState([]);
   const [revDescricoes, setRevDescricoes] = useState({}); // { [indice]: texto }
   const [revErro, setRevErro] = useState('');
   const [novoValor, setNovoValor] = useState(rel.valor);
   const [assinado, setAssinado] = useState(null);
-  const [atestoArquivo, setAtestoArquivo] = useState(null);
-  const [atestoObs, setAtestoObs] = useState('');
   const [obsLinhas, setObsLinhas] = useState(['']);
-  const [corrLinhas, setCorrLinhas] = useState(['']);
   const [analisando, setAnalisando] = useState(false);
   const [reabrirTexto, setReabrirTexto] = useState('');
   const analise = (rel.analises && rel.analises[0]) || null;
@@ -388,43 +385,6 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
     );
   }
 
-  // ---- Coordenador: atesto / correção documental ----
-  if (ehCoordenador && e === 'AGUARDANDO_ATESTO') {
-    const itensCorr = corrLinhas.filter((x) => x.trim()).map((t) => ({ texto: t, origem: 'COORDENADOR' }));
-    return (
-      <div className="card card-pad" style={{ marginTop: 16 }}>
-        <h3 style={{ marginBottom: 6 }}>Atesto contábil</h3>
-        <p className="descricao" style={{ marginBottom: 14 }}>Insira o atesto para concluir, ou solicite correção dos documentos contábeis.</p>
-        <div className="campo">
-          <label>Documento do atesto <span className="dica">(opcional)</span></label>
-          <div className="dropzone">Anexar o atesto<input type="file" accept=".pdf,.xlsx,.xls,.csv" onChange={(ev) => setAtestoArquivo(ev.target.files[0] || null)} /></div>
-        </div>
-        <div className="campo">
-          <label>Observações do atesto <span className="dica">(opcional)</span></label>
-          <textarea className="textarea" value={atestoObs} onChange={(ev) => setAtestoObs(ev.target.value)} />
-        </div>
-        <hr className="divisor" />
-        <div className="campo">
-          <label>Ou solicite correção documental <span className="dica">(observações numeradas)</span></label>
-          {corrLinhas.map((l, i) => (
-            <div key={i} className="row" style={{ marginBottom: 6 }}>
-              <span className="mono" style={{ width: 22 }}>{i + 1}.</span>
-              <input className="input" style={{ flex: 1 }} value={l} onChange={(ev) => setLinha(corrLinhas, setCorrLinhas, i, ev.target.value)} placeholder="O que precisa ser corrigido…" />
-              {corrLinhas.length > 1 && <button className="btn btn-secundario" onClick={() => rmLinha(corrLinhas, setCorrLinhas, i)}>×</button>}
-            </div>
-          ))}
-          <button className="btn btn-secundario" onClick={() => addLinha(corrLinhas, setCorrLinhas)}>+ observação</button>
-        </div>
-        <div className="row row-fim">
-          <button className="btn btn-secundario" disabled={ocupado || itensCorr.length === 0}
-            onClick={() => acao(() => api.correcaoDocumental(rel.id, itensCorr))}>Solicitar correção</button>
-          <button className="btn btn-ambar" disabled={ocupado}
-            onClick={() => acao(() => api.registrarAtesto(rel.id, atestoArquivo, atestoObs))}>Inserir atesto e concluir</button>
-        </div>
-      </div>
-    );
-  }
-
   // ---- Colaborador: reenvio após reprovação ----
   if (!ehCoordenador && e === 'REPROVADO') {
     const obsPendentes = (rel.observacoes || []).filter(
@@ -492,24 +452,10 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
     );
   }
 
-  // ---- Colaborador: documentação fiscal ----
-  if (!ehCoordenador && (e === 'APROVADO' || e === 'CORRECAO_DOCUMENTAL')) {
-    return (
-      <div className="card card-pad" style={{ marginTop: 16 }}>
-        <h3 style={{ marginBottom: 6 }}>{e === 'APROVADO' ? 'Incluir documentação fiscal' : 'Reenviar documentos contábeis'}</h3>
-        <p className="descricao" style={{ marginBottom: 14 }}>Ao incluir, o sistema solicita automaticamente o atesto ao financeiro. PDF, planilhas ou compactado (zip/rar).</p>
-        <div className="dropzone">Selecione os documentos fiscais<input type="file" multiple accept=".pdf,.xlsx,.xls,.csv,.zip,.rar" onChange={(ev) => setArquivos(Array.from(ev.target.files))} /></div>
-        {arquivos.length > 0 && <p className="descricao" style={{ marginTop: 10 }}>{arquivos.length} arquivo(s) selecionado(s).</p>}
-        <div className="row row-fim" style={{ marginTop: 14 }}>
-          <button className="btn btn-primario" disabled={ocupado || arquivos.length === 0}
-            onClick={() => acao(() => api.incluirDocFiscal(rel.id, arquivos))}>{e === 'APROVADO' ? 'Incluir e solicitar atesto' : 'Reenviar documentos'}</button>
-        </div>
-      </div>
-    );
-  }
-
   // ---- Concluído ----
   if (e === 'CONCLUIDO') {
+    // Relatórios concluídos antes da eliminação da etapa de atesto contábil
+    // ainda podem ter um atesto registrado — exibido só quando existir.
     const ultimoAtesto = (rel.atestos || [])[rel.atestos.length - 1] || null;
     const atestoAnexo = ultimoAtesto?.anexoId
       ? (rel.anexos || []).find((a) => a.id === ultimoAtesto.anexoId)
@@ -517,7 +463,7 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
     return (
       <div className="card card-pad" style={{ marginTop: 16 }}>
         <div className="alerta alerta-info">
-          <b>Processo concluído.</b> O atesto contábil foi emitido.
+          <b>Processo concluído.</b> A medição foi aprovada pelo coordenador.
           {ultimoAtesto?.observacoes ? <div style={{ marginTop: 6 }}>{ultimoAtesto.observacoes}</div> : null}
         </div>
         {atestoAnexo && (
@@ -531,8 +477,8 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
             <div className="campo">
               <label>Reabrir processo <span className="dica">(justificativa obrigatória)</span></label>
               <p className="descricao" style={{ marginBottom: 8 }}>
-                Volta para "Correção documental" — o autor poderá anexar novos documentos fiscais
-                e reenviar para um novo atesto. O histórico atual é preservado.
+                Volta para "Em análise" — você poderá aprovar ou reprovar de novo. O histórico
+                atual é preservado.
               </p>
               <textarea className="textarea" value={reabrirTexto} onChange={(ev) => setReabrirTexto(ev.target.value)}
                 placeholder="Motivo da reabertura…" />
@@ -549,8 +495,8 @@ function PainelAcao({ rel, ehCoordenador, ocupado, acao }) {
     );
   }
 
-  if (e === 'EM_ANALISE' || e === 'AGUARDANDO_ATESTO') {
-    return <div className="alerta alerta-info" style={{ marginTop: 16 }}>{e === 'EM_ANALISE' ? 'Aguardando análise do coordenador.' : 'Aguardando o atesto do coordenador.'}</div>;
+  if (e === 'EM_ANALISE') {
+    return <div className="alerta alerta-info" style={{ marginTop: 16 }}>Aguardando análise do coordenador.</div>;
   }
   return null;
 }
