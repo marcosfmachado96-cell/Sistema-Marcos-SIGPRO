@@ -7,11 +7,11 @@ import { CampoContrato } from '../components/CampoContrato';
 
 const ROTULO_TIPO = {
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
-  PARALISACAO: 'Paralisação', RETOMADA: 'Retomada', ANDAMENTO: 'Andamento',
+  PARALISACAO: 'Paralisação', RETOMADA: 'Retomada', ANDAMENTO: 'Em execução', CONCLUIDA: 'Concluída',
 };
 const BADGE_TIPO = {
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
-  PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde',
+  PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
 
 export function DetalheNotaServico() {

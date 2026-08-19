@@ -8,15 +8,15 @@ import { useAuth } from '../auth';
 
 const ROTULO_EVENTO = {
   MOBILIZACAO: 'Mobilizado', DESMOBILIZACAO: 'Desmobilizado', OCORRENCIA: 'Ocorrência',
-  PARALISACAO: 'Paralisado', RETOMADA: 'Em execução', ANDAMENTO: 'Em execução',
+  PARALISACAO: 'Paralisado', RETOMADA: 'Em execução', ANDAMENTO: 'Em execução', CONCLUIDA: 'Concluída',
 };
 const COR_EVENTO = {
   MOBILIZACAO: '#2e6da4', DESMOBILIZACAO: '#5b6472', OCORRENCIA: '#b9821f',
-  PARALISACAO: '#b4452f', RETOMADA: '#2e7d5b', ANDAMENTO: '#2e7d5b',
+  PARALISACAO: '#b4452f', RETOMADA: '#2e7d5b', ANDAMENTO: '#2e7d5b', CONCLUIDA: '#161a20',
 };
 const BADGE_EVENTO = {
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
-  PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde',
+  PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
 const COR_PADRAO = '#5b6472'; // sem eventos ainda ("Cadastrada")
 

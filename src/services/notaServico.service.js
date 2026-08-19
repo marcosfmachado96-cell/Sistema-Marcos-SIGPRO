@@ -13,7 +13,7 @@ function limparNome(s) {
     .replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-const TIPOS_EVENTO = ['MOBILIZACAO', 'DESMOBILIZACAO', 'OCORRENCIA', 'PARALISACAO', 'RETOMADA', 'ANDAMENTO'];
+const TIPOS_EVENTO = ['MOBILIZACAO', 'DESMOBILIZACAO', 'OCORRENCIA', 'PARALISACAO', 'RETOMADA', 'ANDAMENTO', 'CONCLUIDA'];
 
 async function obterNota(id) {
   const n = await prisma.notaServico.findUnique({ where: { id } });
