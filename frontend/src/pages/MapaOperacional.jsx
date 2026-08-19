@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../api';
 import { fmtRodovia } from '../util';
+import { useAuth } from '../auth';
 
 const ROTULO_EVENTO = {
   MOBILIZACAO: 'Mobilizado', DESMOBILIZACAO: 'Desmobilizado', OCORRENCIA: 'Ocorrência',
@@ -108,6 +109,7 @@ function popupNota(nota, rotulo, cor) {
 export function MapaOperacional() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { usuario } = useAuth();
   const mapaRef = useRef(null);
   const containerRef = useRef(null);
   const malhaRef = useRef(new Map());
@@ -304,17 +306,29 @@ export function MapaOperacional() {
                   <th>Contrato</th>
                   <th>Rodovia/km</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {notasFiltradas.map((n) => {
                   const s = statusNota(n);
+                  const ehAutor = usuario && n.autorId === usuario.id;
                   return (
                     <tr key={n.id} onClick={() => focarNota(n.id)}>
                       <td>{n.numero}</td>
                       <td>{n.contrato}</td>
                       <td>{fmtRodovia(n.rodovia)} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
                       <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
+                      <td className="col-acoes">
+                        {ehAutor && (
+                          <button
+                            className="btn btn-secundario btn-sm"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/mapa-operacional/${n.id}`); }}
+                          >
+                            Registrar evento
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}

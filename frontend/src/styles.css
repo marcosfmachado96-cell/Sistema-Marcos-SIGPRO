@@ -184,6 +184,7 @@ a:hover { text-decoration: underline; }
 .btn-ambar { background: var(--ambar); color: var(--grafite); }
 .btn-ambar:hover:not(:disabled) { background: var(--ambar-escuro); color: #fff; }
 .btn-bloco { width: 100%; justify-content: center; }
+.btn-sm { padding: 5px 10px; font-size: 12.5px; }
 
 /* ============================ Status badge ============================ */
 .badge {
@@ -244,6 +245,7 @@ a:hover { text-decoration: underline; }
 .tabela tbody tr:hover { background: var(--concreto); }
 .tabela .col-num { font-family: var(--fonte-mono); font-weight: 500; }
 .tabela .col-valor { font-family: var(--fonte-mono); text-align: right; }
+.tabela .col-acoes { text-align: right; white-space: nowrap; }
 
 /* ============================ Formulários ============================ */
 .campo { margin-bottom: 16px; }
