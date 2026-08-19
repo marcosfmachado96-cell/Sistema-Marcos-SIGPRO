@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { fmtRodovia } from '../util';
 
 export function NovaNotaServico() {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ export function NovaNotaServico() {
               <label>Rodovia</label>
               <select className="input" value={form.rodovia} onChange={(e) => set('rodovia', e.target.value)} required>
                 <option value="">Selecione…</option>
-                {rodovias.map((r) => <option key={r} value={r}>PR-{r}</option>)}
+                {rodovias.map((r) => <option key={r} value={r}>{fmtRodovia(r)}</option>)}
               </select>
             </div>
           </div>

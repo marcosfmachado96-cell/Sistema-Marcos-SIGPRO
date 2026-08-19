@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { fmtData, fmtDataHora } from '../util';
+import { fmtData, fmtDataHora, fmtRodovia } from '../util';
 
 const ROTULO_TIPO = {
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
@@ -80,7 +80,7 @@ export function DetalheNotaServico() {
     <>
       <div className="pagina-cab">
         <div>
-          <div className="eyebrow">Mapa Operacional · PR-{nota.rodovia} · km {nota.kmInicial}{nota.kmFinal != nota.kmInicial ? ` a ${nota.kmFinal}` : ''}</div>
+          <div className="eyebrow">Mapa Operacional · {fmtRodovia(nota.rodovia)} · km {nota.kmInicial}{nota.kmFinal != nota.kmInicial ? ` a ${nota.kmFinal}` : ''}</div>
           <h1>{nota.numero}</h1>
           <div className="descricao">{nota.autor?.nome}{nota.autor?.contratada ? ` · ${nota.autor.contratada}` : ''} · {fmtDataHora(nota.criadoEm)}</div>
         </div>
@@ -177,7 +177,7 @@ export function DetalheNotaServico() {
 
       <div className="card card-pad">
         <h3 style={{ marginBottom: 14 }}>Histórico</h3>
-        {(nota.eventos || []).length === 0 && <p className="descricao">Nenhum evento registrado ainda.</p>}
+        {(nota.eventos || []).length === 0 && <p className="descricao" style={{ marginBottom: 14 }}>Nenhum evento registrado ainda.</p>}
         <ul className="timeline">
           {(nota.eventos || []).map((ev) => (
             <li key={ev.id}>
@@ -197,6 +197,12 @@ export function DetalheNotaServico() {
               )}
             </li>
           ))}
+          <li>
+            <div className="tl-acao">
+              <span className="badge badge-grafite">Cadastro</span>
+            </div>
+            <div className="tl-meta">{nota.autor?.nome} · Nota cadastrada em {fmtDataHora(nota.criadoEm)}</div>
+          </li>
         </ul>
       </div>
     </>

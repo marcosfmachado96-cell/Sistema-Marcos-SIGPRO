@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../api';
+import { fmtRodovia } from '../util';
 
 const ROTULO_EVENTO = {
   MOBILIZACAO: 'Mobilizado', DESMOBILIZACAO: 'Desmobilizado', OCORRENCIA: 'Ocorrência',
@@ -97,7 +98,7 @@ function trechoRodovia(malhaPorRodovia, rodovia, kmA, kmB) {
 function popupNota(nota, rotulo, cor) {
   const km = nota.kmFinal != nota.kmInicial ? `${nota.kmInicial} a ${nota.kmFinal}` : `${nota.kmInicial}`;
   return (
-    `<b>${nota.numero}</b> — PR-${nota.rodovia} (km ${km})<br>` +
+    `<b>${nota.numero}</b> — ${fmtRodovia(nota.rodovia)} (km ${km})<br>` +
     `${nota.contrato}<br>${nota.descricao}<br>` +
     `<span style="color:${cor}">● ${rotulo}</span><br>` +
     `<a href="#" data-id="${nota.id}">Ver detalhes</a>`
@@ -173,7 +174,7 @@ export function MapaOperacional() {
           style: { color: '#9aa3af', weight: 1.5, opacity: 0.55 },
           onEachFeature: (f, layer) => {
             const p = f.properties;
-            layer.bindPopup(`<b>PR-${p.rodovia}</b><br>${p.de || ''} — ${p.para || ''}<br>km ${p.kmInicial} a ${p.kmFinal}`);
+            layer.bindPopup(`<b>${fmtRodovia(p.rodovia)}</b><br>${p.de || ''} — ${p.para || ''}<br>km ${p.kmInicial} a ${p.kmFinal}`);
           },
         }).addTo(mapa);
       })
@@ -252,7 +253,7 @@ export function MapaOperacional() {
             <label>Rodovia</label>
             <select className="input" value={filtroRodovia} onChange={(e) => setFiltroRodovia(e.target.value)}>
               <option value="">Todas</option>
-              {rodovias.map((r) => <option key={r} value={r}>PR-{r}</option>)}
+              {rodovias.map((r) => <option key={r} value={r}>{fmtRodovia(r)}</option>)}
             </select>
           </div>
           <div className="campo">
@@ -286,7 +287,7 @@ export function MapaOperacional() {
                     <tr key={n.id} onClick={() => navigate(`/mapa-operacional/${n.id}`)}>
                       <td>{n.numero}</td>
                       <td>{n.contrato}</td>
-                      <td>PR-{n.rodovia} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
+                      <td>{fmtRodovia(n.rodovia)} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
                       <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
                     </tr>
                   );

@@ -19,6 +19,11 @@ export function fmtPeriodo(ini, fim) {
   return `${fmtData(ini)} – ${fmtData(fim)}`;
 }
 
+// Nomenclatura oficial do DER/PR usa sempre três dígitos (ex.: PR-090, não PR-90).
+export function fmtRodovia(numero) {
+  return `PR-${String(numero).padStart(3, '0')}`;
+}
+
 // Planilhas exigem uma descrição do conteúdo (ex.: "Planilha AS BUILT").
 export function ehPlanilha(arquivo) {
   const nome = arquivo.name.toLowerCase();
