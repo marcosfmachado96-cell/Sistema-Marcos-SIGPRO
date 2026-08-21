@@ -82,6 +82,7 @@
 * { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
+html { scrollbar-gutter: stable; }
 
 body {
   margin: 0;
@@ -340,7 +341,7 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--sombra); padding: 8px; display: flex; flex-direction: column; gap: 2px;
 }
 .multiselect-item {
-  display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--raio-sm);
+  display: flex; align-items: center; gap: 14px; padding: 9px 10px; border-radius: var(--raio-sm);
   font-size: 14px; line-height: 1.3; cursor: pointer; user-select: none;
 }
 .multiselect-item:hover { background: var(--concreto); }
@@ -430,7 +431,7 @@ a:hover { text-decoration: underline; }
 .sidebar {
   width: 264px; flex-shrink: 0; background: #0f1319; color: #cfd4da;
   display: flex; flex-direction: column; border-right: 1px solid #1c222b;
-  position: sticky; top: 0; height: 100vh;
+  position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto;
 }
 .sidebar-topo { display: flex; align-items: center; gap: 12px; padding: 22px 20px; border-bottom: 1px solid #1c222b; }
 .sidebar-marca .sm-titulo { font-weight: 700; font-size: 18px; color: #fff; letter-spacing: 0.02em; }
@@ -448,7 +449,7 @@ a:hover { text-decoration: underline; }
 .sr-titulo { font-size: 13px; font-weight: 600; color: #e2e6ea; }
 .sr-sub { font-size: 11.5px; color: #7c848e; line-height: 1.5; margin-top: 2px; }
 
-.painel { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.painel { flex: 1; min-width: 0; display: flex; flex-direction: column; margin-left: 264px; }
 .topbar {
   display: flex; align-items: center; gap: 14px; height: 66px; padding: 0 28px;
   background: var(--superficie); border-bottom: 1px solid var(--linha); position: sticky; top: 0; z-index: 5;
@@ -515,6 +516,7 @@ a:hover { text-decoration: underline; }
   .sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; overflow-x: auto; }
   .sidebar-rodape, .sidebar-topo { border: none; }
   .sidebar-nav { flex-direction: row; }
+  .painel { margin-left: 0; }
   .meta-cards { grid-template-columns: repeat(2, 1fr); }
   .meta-card:nth-child(2) { border-right: none; }
   .tram-trilha { overflow-x: auto; }
