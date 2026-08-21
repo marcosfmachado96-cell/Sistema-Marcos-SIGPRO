@@ -357,39 +357,51 @@ a:hover { text-decoration: underline; }
   transform: translateY(0) scale(1);
 }
 
-/* Cada opção é uma única linha flex: checkbox de largura fixa + texto no
-   espaço restante. Sem posicionamento absoluto entre os dois — a ausência
-   de overlap vem da própria natureza do flexbox (irmãos nunca se sobrepõem
-   quando nenhum dos dois é posicionado fora do fluxo). */
-.multiselect-item {
+/* Cada opção é uma única linha flex: caixa visual de largura fixa + texto
+   no espaço restante — nunca se sobrepõem, por construção. O <input> real
+   fica visualmente oculto (mas funcional, focável por teclado); quem
+   aparece na tela é a "-visual", um <span> decorativo comum, para nunca
+   depender da renderização nativa do checkbox do navegador (alguns
+   navegadores desenham a marcação nativa por cima mesmo com
+   appearance:none — isso causava a sobreposição).
+   Seletor prefixado com .multiselect-painel (2 classes) de propósito: o
+   painel fica aninhado dentro do mesmo .campo do filtro, e ".campo label"
+   (display:block, especificidade classe+tipo) vencia ".multiselect-item"
+   sozinho (especificidade só de classe) — daí a caixa e o texto
+   empilhando em vez de ficar lado a lado. */
+.multiselect-painel .multiselect-item {
   display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: var(--raio-sm);
   font-size: 14px; cursor: pointer; user-select: none;
   transition: background 0.12s ease;
 }
-.multiselect-item:hover { background: var(--concreto); }
+.multiselect-painel .multiselect-item:hover { background: var(--concreto); }
+.multiselect-painel .multiselect-item:hover .multiselect-checkbox-visual { border-color: var(--azul); }
 
 .multiselect-texto {
   flex: 1 1 auto; min-width: 0; color: var(--texto);
   line-height: 1.4; overflow-wrap: break-word;
 }
 
-.multiselect-checkbox {
-  appearance: none; -webkit-appearance: none; margin: 0; padding: 0;
+.multiselect-checkbox-input {
+  position: absolute; width: 0; height: 0; margin: 0; padding: 0; border: 0; opacity: 0;
+}
+
+.multiselect-checkbox-visual {
   flex: 0 0 18px; width: 18px; height: 18px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
   border: 1.5px solid var(--linha-forte); border-radius: 5px;
-  background: var(--superficie); cursor: pointer; display: inline-block; position: relative;
+  background: var(--superficie); color: #fff;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.multiselect-checkbox:hover { border-color: var(--azul); }
-.multiselect-checkbox:focus-visible { outline: 2px solid var(--azul-claro); outline-offset: 2px; }
-.multiselect-checkbox:checked {
+.multiselect-checkbox-visual svg {
+  opacity: 0; transform: scale(0.5);
+  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.multiselect-checkbox-input:checked + .multiselect-checkbox-visual {
   background: var(--azul); border-color: var(--azul); box-shadow: 0 0 0 3px var(--azul-veu);
 }
-.multiselect-checkbox:checked::after {
-  content: ''; position: absolute; left: 5.5px; top: 1.5px;
-  width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
+.multiselect-checkbox-input:checked + .multiselect-checkbox-visual svg { opacity: 1; transform: scale(1); }
+.multiselect-checkbox-input:focus-visible + .multiselect-checkbox-visual { outline: 2px solid var(--azul-claro); outline-offset: 2px; }
 
 .multiselect-limpar {
   display: block; width: 100%; text-align: left; padding: 8px 9px; margin-bottom: 4px;

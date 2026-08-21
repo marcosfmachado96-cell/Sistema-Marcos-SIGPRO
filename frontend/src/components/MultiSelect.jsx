@@ -48,10 +48,13 @@ export function MultiSelect({ opcoes, selecionados, onChange, placeholder = 'Tod
           <label key={o.valor} className="multiselect-item">
             <input
               type="checkbox"
-              className="multiselect-checkbox"
+              className="multiselect-checkbox-input"
               checked={selecionados.includes(o.valor)}
               onChange={() => alternar(o.valor)}
             />
+            <span className="multiselect-checkbox-visual" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l5 5L20 6" /></svg>
+            </span>
             <span className="multiselect-texto">{o.rotulo}</span>
           </label>
         ))}
