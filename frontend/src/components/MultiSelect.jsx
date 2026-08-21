@@ -46,11 +46,13 @@ export function MultiSelect({ opcoes, selecionados, onChange, placeholder = 'Tod
         )}
         {opcoes.map((o) => (
           <label key={o.valor} className="multiselect-item">
-            <span className="multiselect-checkbox">
-              <input type="checkbox" checked={selecionados.includes(o.valor)} onChange={() => alternar(o.valor)} />
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l5 5L20 6" /></svg>
-            </span>
-            <span>{o.rotulo}</span>
+            <input
+              type="checkbox"
+              className="multiselect-checkbox"
+              checked={selecionados.includes(o.valor)}
+              onChange={() => alternar(o.valor)}
+            />
+            <span className="multiselect-texto">{o.rotulo}</span>
           </label>
         ))}
         {opcoes.length === 0 && <div className="multiselect-vazio">Nenhuma opção disponível.</div>}
