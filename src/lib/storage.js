@@ -6,14 +6,15 @@
 // O driver é resolvido automaticamente: usa 's3' se as credenciais estiverem
 // configuradas; caso contrário 'local'. Pode ser forçado via STORAGE_DRIVER.
 //
-// Decisões: acervo append-only (sem remoção); o objeto nunca é público —
-// no S3 via URL assinada, no local via endpoint autenticado que faz streaming.
+// Decisões: o objeto nunca é público — no S3 via URL assinada, no local via
+// endpoint autenticado que faz streaming. Remoção existe só para a limpeza
+// automática de medições concluídas há muito tempo (ver src/jobs/limpezaRelatorios.js).
 
 const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
 const crypto = require('crypto');
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const env = require('../config/env');
 
@@ -119,6 +120,17 @@ async function obterStream(chave) {
   return r.Body; // Readable (Node) no AWS SDK v3
 }
 
+// Remove o objeto permanentemente (usado pela limpeza automática de medições
+// antigas). Local: apaga o arquivo, ignorando se já não existir.
+async function removerObjeto(chave) {
+  if (driver() === 'local') {
+    const alvo = caminhoLocal(chave);
+    await fsp.unlink(alvo).catch((e) => { if (e.code !== 'ENOENT') throw e; });
+    return;
+  }
+  await clientS3().send(new DeleteObjectCommand({ Bucket: env.s3.bucket, Key: chave }));
+}
+
 // Lê o objeto inteiro como Buffer (usado pela IA para extrair o texto do PDF).
 async function obterBuffer(chave) {
   const stream = await obterStream(chave);
@@ -127,4 +139,4 @@ async function obterBuffer(chave) {
   return Buffer.concat(partes);
 }
 
-module.exports = { driver, configurado, montarChave, enviarObjeto, prepararLeitura, obterStream, obterBuffer, linkDownload };
+module.exports = { driver, configurado, montarChave, enviarObjeto, prepararLeitura, obterStream, obterBuffer, linkDownload, removerObjeto };
