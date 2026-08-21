@@ -325,6 +325,32 @@ a:hover { text-decoration: underline; }
 .mapa-filtros .campo { flex: 1 1 220px; margin-bottom: 0; }
 .mapa-lista-tabela { max-height: 420px; overflow-y: auto; }
 
+/* ============================ MultiSelect ============================ */
+.multiselect { position: relative; }
+.multiselect-botao {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  cursor: pointer; text-align: left;
+}
+.multiselect-botao span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.multiselect-painel {
+  position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
+  max-height: 240px; overflow-y: auto;
+  background: var(--superficie); border: 1px solid var(--linha-forte); border-radius: var(--raio-sm);
+  box-shadow: var(--sombra); padding: 6px;
+}
+.multiselect-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: var(--raio-sm);
+  font-size: 14px; cursor: pointer;
+}
+.multiselect-item:hover { background: var(--concreto); }
+.multiselect-item input { margin: 0; }
+.multiselect-limpar {
+  display: block; width: 100%; text-align: left; padding: 7px 8px; margin-bottom: 4px;
+  border: none; border-bottom: 1px solid var(--linha); border-radius: 0;
+  background: transparent; color: var(--azul); font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.multiselect-vazio { padding: 7px 8px; font-size: 13px; color: var(--texto-fraco); }
+
 @media (max-width: 760px) {
   .acesso { grid-template-columns: 1fr; }
   .acesso-arte { display: none; }

@@ -4,10 +4,12 @@ import { api } from '../api';
 import { fmtRodovia } from '../util';
 import { CampoContrato } from '../components/CampoContrato';
 
+const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: 'Não Pavimentada' };
+
 export function NovaNotaServico() {
   const navigate = useNavigate();
   const [rodovias, setRodovias] = useState([]);
-  const [form, setForm] = useState({ numero: '', contrato: '', descricao: '', rodovia: '', kmInicial: '', kmFinal: '' });
+  const [form, setForm] = useState({ numero: '', contrato: '', descricao: '', programa: '', rodovia: '', kmInicial: '', kmFinal: '' });
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -63,6 +65,13 @@ export function NovaNotaServico() {
             <label>Descrição</label>
             <input className="input" value={form.descricao} onChange={(e) => set('descricao', e.target.value)}
               placeholder="Ex.: Recomposição de revestimento primário…" required />
+          </div>
+          <div className="campo" style={{ maxWidth: 260 }}>
+            <label>Programa</label>
+            <select className="input" value={form.programa} onChange={(e) => set('programa', e.target.value)} required>
+              <option value="">Selecione…</option>
+              {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+            </select>
           </div>
 
           <h3 style={{ margin: '16px 0' }}>Localização</h3>

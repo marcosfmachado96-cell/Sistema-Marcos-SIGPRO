@@ -14,6 +14,7 @@ function limparNome(s) {
 }
 
 const TIPOS_EVENTO = ['MOBILIZACAO', 'DESMOBILIZACAO', 'OCORRENCIA', 'PARALISACAO', 'RETOMADA', 'ANDAMENTO', 'CONCLUIDA'];
+const PROGRAMAS = ['PROMAC', 'PROSEG', 'NAO_PAVIMENTADA'];
 
 async function obterNota(id) {
   const n = await prisma.notaServico.findUnique({ where: { id } });
@@ -30,9 +31,12 @@ function exigirAutor(nota, ator) {
 }
 
 async function criar(dados, ator) {
-  const { numero, contrato, descricao } = dados;
+  const { numero, contrato, descricao, programa } = dados;
   if (!numero?.trim() || !contrato?.trim() || !descricao?.trim()) {
     const e = new Error('Informe número, contrato e descrição.'); e.status = 400; throw e;
+  }
+  if (!PROGRAMAS.includes(programa)) {
+    const e = new Error('Informe o programa (PROMAC, PROSEG ou Não Pavimentada).'); e.status = 400; throw e;
   }
   const rodovia = Number(dados.rodovia);
   const kmInicial = Number(dados.kmInicial);
@@ -50,7 +54,7 @@ async function criar(dados, ator) {
 
   return prisma.notaServico.create({
     data: {
-      numero: numero.trim(), contrato: contrato.trim(), descricao: descricao.trim(),
+      numero: numero.trim(), contrato: contrato.trim(), descricao: descricao.trim(), programa,
       rodovia, kmInicial, kmFinal,
       latitude: ponto.lat, longitude: ponto.lng,
       autorId: ator.id,
@@ -97,6 +101,12 @@ async function atualizar(id, dados, ator) {
   if (dados.numero != null) data.numero = dados.numero.trim();
   if (dados.contrato != null) data.contrato = dados.contrato.trim();
   if (dados.descricao != null) data.descricao = dados.descricao.trim();
+  if (dados.programa != null) {
+    if (!PROGRAMAS.includes(dados.programa)) {
+      const e = new Error('Programa inválido.'); e.status = 400; throw e;
+    }
+    data.programa = dados.programa;
+  }
 
   // Se rodovia/km mudar, recalcula o ponto no mapa.
   const rodovia = dados.rodovia != null ? Number(dados.rodovia) : nota.rodovia;

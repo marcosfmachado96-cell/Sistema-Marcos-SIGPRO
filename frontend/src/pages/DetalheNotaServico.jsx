@@ -13,6 +13,7 @@ const BADGE_TIPO = {
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
   PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
+const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: 'Não Pavimentada' };
 
 export function DetalheNotaServico() {
   const { id } = useParams();
@@ -35,7 +36,7 @@ export function DetalheNotaServico() {
     api.detalharNotaServico(id)
       .then((n) => {
         setNota(n);
-        setForm({ numero: n.numero, contrato: n.contrato, descricao: n.descricao, rodovia: n.rodovia, kmInicial: n.kmInicial, kmFinal: n.kmFinal });
+        setForm({ numero: n.numero, contrato: n.contrato, descricao: n.descricao, programa: n.programa || '', rodovia: n.rodovia, kmInicial: n.kmInicial, kmFinal: n.kmFinal });
       })
       .catch((e) => setErro(e.message));
   }, [id]);
@@ -115,6 +116,13 @@ export function DetalheNotaServico() {
             <label>Descrição</label>
             <input className="input" value={form.descricao} onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))} required />
           </div>
+          <div className="campo" style={{ maxWidth: 260 }}>
+            <label>Programa</label>
+            <select className="input" value={form.programa} onChange={(e) => setForm((f) => ({ ...f, programa: e.target.value }))} required>
+              <option value="">Selecione…</option>
+              {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+            </select>
+          </div>
           <div className="grade-2">
             <div className="campo">
               <label>Rodovia</label>
@@ -138,6 +146,7 @@ export function DetalheNotaServico() {
         <div className="card card-pad meta-cards" style={{ marginBottom: 16 }}>
           <MetaCard icone="folder" titulo="Contrato" valor={nota.contrato} />
           <MetaCard icone="doc" titulo="Descrição" valor={nota.descricao} />
+          <MetaCard icone="doc" titulo="Programa" valor={ROTULO_PROGRAMA[nota.programa] || '—'} />
         </div>
       )}
 

@@ -418,11 +418,18 @@ enum TipoEventoNota {
   CONCLUIDA
 }
 
+enum ProgramaNota {
+  PROMAC
+  PROSEG
+  NAO_PAVIMENTADA
+}
+
 model NotaServico {
   id        String  @id @default(uuid())
   numero    String  // número da nota de serviço emitida
   contrato  String
   descricao String
+  programa  ProgramaNota?
 
   rodovia   Int      // ex.: 486 (PR-486)
   kmInicial Decimal  @db.Decimal(7, 2)

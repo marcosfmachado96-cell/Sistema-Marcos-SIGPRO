@@ -5,6 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import { api } from '../api';
 import { fmtRodovia } from '../util';
 import { useAuth } from '../auth';
+import { MultiSelect } from '../components/MultiSelect';
+
+const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: 'Não Pavimentada' };
 
 const ROTULO_EVENTO = {
   MOBILIZACAO: 'Mobilizado', DESMOBILIZACAO: 'Desmobilizado', OCORRENCIA: 'Ocorrência',
@@ -98,9 +101,10 @@ function trechoRodovia(malhaPorRodovia, rodovia, kmA, kmB) {
 
 function popupNota(nota, rotulo, cor) {
   const km = nota.kmFinal != nota.kmInicial ? `${nota.kmInicial} a ${nota.kmFinal}` : `${nota.kmInicial}`;
+  const programa = ROTULO_PROGRAMA[nota.programa];
   return (
     `<b>${nota.numero}</b> — ${fmtRodovia(nota.rodovia)} (km ${km})<br>` +
-    `${nota.contrato}<br>${nota.descricao}<br>` +
+    `${nota.contrato}${programa ? ` · ${programa}` : ''}<br>${nota.descricao}<br>` +
     `<span style="color:${cor}">● ${rotulo}</span><br>` +
     `<a href="#" data-id="${nota.id}">Ver detalhes</a>`
   );
@@ -119,39 +123,46 @@ export function MapaOperacional() {
   const [notas, setNotas] = useState(null);
   const [erro, setErro] = useState('');
 
-  const [filtroContrato, setFiltroContrato] = useState('');
-  const [filtroRodovia, setFiltroRodovia] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('');
+  const [filtroContrato, setFiltroContrato] = useState([]);
+  const [filtroRodovia, setFiltroRodovia] = useState([]);
+  const [filtroStatus, setFiltroStatus] = useState([]);
+  const [filtroPrograma, setFiltroPrograma] = useState([]);
 
   useEffect(() => {
     api.listarNotasServico().then(setNotas).catch((e) => setErro(e.message));
   }, []);
 
-  const contratos = useMemo(
-    () => [...new Set((notas || []).map((n) => n.contrato))].sort(),
+  const opcoesContrato = useMemo(
+    () => [...new Set((notas || []).map((n) => n.contrato))].sort().map((c) => ({ valor: c, rotulo: c })),
     [notas],
   );
-  const rodovias = useMemo(
-    () => [...new Set((notas || []).map((n) => n.rodovia))].sort((a, b) => a - b),
+  const opcoesRodovia = useMemo(
+    () => [...new Set((notas || []).map((n) => n.rodovia))].sort((a, b) => a - b)
+      .map((r) => ({ valor: String(r), rotulo: fmtRodovia(r) })),
     [notas],
   );
-  const statusDisponiveis = useMemo(() => {
+  const opcoesStatus = useMemo(() => {
     const vistos = new Map();
     for (const n of notas || []) {
       const s = statusNota(n);
       if (!vistos.has(s.rotulo)) vistos.set(s.rotulo, s);
     }
-    return [...vistos.values()];
+    return [...vistos.values()].map((s) => ({ valor: s.rotulo, rotulo: s.rotulo }));
+  }, [notas]);
+  const opcoesPrograma = useMemo(() => {
+    const vistos = new Set((notas || []).map((n) => n.programa).filter(Boolean));
+    return Object.entries(ROTULO_PROGRAMA).filter(([v]) => vistos.has(v)).map(([v, r]) => ({ valor: v, rotulo: r }));
   }, [notas]);
 
   const notasFiltradas = useMemo(() => {
     return (notas || []).filter((n) => {
-      if (filtroContrato && n.contrato !== filtroContrato) return false;
-      if (filtroRodovia && String(n.rodovia) !== filtroRodovia) return false;
-      if (filtroStatus && statusNota(n).rotulo !== filtroStatus) return false;
+      if (filtroContrato.length > 0 && !filtroContrato.includes(n.contrato)) return false;
+      if (filtroRodovia.length > 0 && !filtroRodovia.includes(String(n.rodovia))) return false;
+      if (filtroStatus.length > 0 && !filtroStatus.includes(statusNota(n).rotulo)) return false;
+      if (filtroPrograma.length > 0 && !filtroPrograma.includes(n.programa)) return false;
       return true;
     });
-  }, [notas, filtroContrato, filtroRodovia, filtroStatus]);
+  }, [notas, filtroContrato, filtroRodovia, filtroStatus, filtroPrograma]);
 
   // Inicializa o mapa e a camada de fundo da malha rodoviária — uma única vez.
   useEffect(() => {
@@ -272,24 +283,19 @@ export function MapaOperacional() {
         <div className="mapa-filtros">
           <div className="campo">
             <label>Contrato</label>
-            <select className="input" value={filtroContrato} onChange={(e) => setFiltroContrato(e.target.value)}>
-              <option value="">Todos</option>
-              {contratos.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <MultiSelect opcoes={opcoesContrato} selecionados={filtroContrato} onChange={setFiltroContrato} />
           </div>
           <div className="campo">
             <label>Rodovia</label>
-            <select className="input" value={filtroRodovia} onChange={(e) => setFiltroRodovia(e.target.value)}>
-              <option value="">Todas</option>
-              {rodovias.map((r) => <option key={r} value={r}>{fmtRodovia(r)}</option>)}
-            </select>
+            <MultiSelect opcoes={opcoesRodovia} selecionados={filtroRodovia} onChange={setFiltroRodovia} placeholder="Todas" />
           </div>
           <div className="campo">
             <label>Status</label>
-            <select className="input" value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
-              <option value="">Todos</option>
-              {statusDisponiveis.map((s) => <option key={s.rotulo} value={s.rotulo}>{s.rotulo}</option>)}
-            </select>
+            <MultiSelect opcoes={opcoesStatus} selecionados={filtroStatus} onChange={setFiltroStatus} />
+          </div>
+          <div className="campo">
+            <label>Programa</label>
+            <MultiSelect opcoes={opcoesPrograma} selecionados={filtroPrograma} onChange={setFiltroPrograma} />
           </div>
         </div>
 
@@ -304,6 +310,7 @@ export function MapaOperacional() {
                 <tr>
                   <th>Nº</th>
                   <th>Contrato</th>
+                  <th>Programa</th>
                   <th>Rodovia/km</th>
                   <th>Status</th>
                   <th></th>
@@ -317,6 +324,7 @@ export function MapaOperacional() {
                     <tr key={n.id} onClick={() => focarNota(n.id)}>
                       <td>{n.numero}</td>
                       <td>{n.contrato}</td>
+                      <td>{ROTULO_PROGRAMA[n.programa] || '—'}</td>
                       <td>{fmtRodovia(n.rodovia)} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
                       <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
                       <td className="col-acoes">
