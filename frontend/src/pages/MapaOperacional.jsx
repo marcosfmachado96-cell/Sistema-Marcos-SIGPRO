@@ -21,11 +21,11 @@ const BADGE_EVENTO = {
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
   PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
-const COR_PADRAO = '#5b6472'; // sem eventos ainda ("Cadastrada")
+const COR_PADRAO = '#5b6472'; // sem eventos ainda ("Aguardando início")
 
 function statusNota(nota) {
   const ultimo = (nota.eventos || [])[0];
-  if (!ultimo) return { rotulo: 'Cadastrada', cor: COR_PADRAO, badge: 'badge-grafite' };
+  if (!ultimo) return { rotulo: 'Aguardando início', cor: COR_PADRAO, badge: 'badge-grafite' };
   return {
     rotulo: ROTULO_EVENTO[ultimo.tipo] || ultimo.tipo,
     cor: COR_EVENTO[ultimo.tipo] || COR_PADRAO,
