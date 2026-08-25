@@ -129,7 +129,7 @@ export function DetalheNotaServico() {
               </select>
             </div>
             <div className="campo">
-              <label>Data de emissão <span className="dica">(pode ser retroativa)</span></label>
+              <label>Data de emissão</label>
               <input className="input" type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} required />
             </div>
           </div>

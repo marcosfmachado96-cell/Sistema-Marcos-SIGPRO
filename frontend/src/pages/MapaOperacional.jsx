@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../api';
-import { fmtRodovia } from '../util';
+import { fmtRodovia, fmtData } from '../util';
 import { useAuth } from '../auth';
 import { MultiSelect } from '../components/MultiSelect';
 
@@ -311,6 +311,7 @@ export function MapaOperacional() {
                   <th>Nº</th>
                   <th>Contrato</th>
                   <th>Programa</th>
+                  <th>Emissão</th>
                   <th>Rodovia/km</th>
                   <th>Status</th>
                   <th></th>
@@ -325,6 +326,7 @@ export function MapaOperacional() {
                       <td>{n.numero}</td>
                       <td>{n.contrato}</td>
                       <td>{ROTULO_PROGRAMA[n.programa] || '—'}</td>
+                      <td>{fmtData(n.dataEmissao)}</td>
                       <td>{fmtRodovia(n.rodovia)} · km {n.kmInicial}{n.kmFinal != n.kmInicial ? `–${n.kmFinal}` : ''}</td>
                       <td><span className={`badge ${s.badge}`}>{s.rotulo}</span></td>
                       <td className="col-acoes">
