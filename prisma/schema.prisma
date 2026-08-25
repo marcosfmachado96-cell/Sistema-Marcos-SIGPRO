@@ -425,11 +425,12 @@ enum ProgramaNota {
 }
 
 model NotaServico {
-  id        String  @id @default(uuid())
-  numero    String  // número da nota de serviço emitida
-  contrato  String
-  descricao String
-  programa  ProgramaNota?
+  id         String   @id @default(uuid())
+  numero     String   // número da nota de serviço emitida
+  contrato   String
+  descricao  String
+  programa   ProgramaNota?
+  dataEmissao DateTime // data em que a nota foi emitida — pode ser retroativa ao cadastro no sistema
 
   rodovia   Int      // ex.: 486 (PR-486)
   kmInicial Decimal  @db.Decimal(7, 2)

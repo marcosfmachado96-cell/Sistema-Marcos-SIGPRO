@@ -36,7 +36,11 @@ export function DetalheNotaServico() {
     api.detalharNotaServico(id)
       .then((n) => {
         setNota(n);
-        setForm({ numero: n.numero, contrato: n.contrato, descricao: n.descricao, programa: n.programa || '', rodovia: n.rodovia, kmInicial: n.kmInicial, kmFinal: n.kmFinal });
+        setForm({
+          numero: n.numero, contrato: n.contrato, descricao: n.descricao, programa: n.programa || '',
+          dataEmissao: n.dataEmissao ? n.dataEmissao.slice(0, 10) : '',
+          rodovia: n.rodovia, kmInicial: n.kmInicial, kmFinal: n.kmFinal,
+        });
       })
       .catch((e) => setErro(e.message));
   }, [id]);
@@ -116,12 +120,18 @@ export function DetalheNotaServico() {
             <label>Descrição</label>
             <input className="input" value={form.descricao} onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))} required />
           </div>
-          <div className="campo" style={{ maxWidth: 260 }}>
-            <label>Programa</label>
-            <select className="input" value={form.programa} onChange={(e) => setForm((f) => ({ ...f, programa: e.target.value }))} required>
-              <option value="">Selecione…</option>
-              {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
-            </select>
+          <div className="grade-2">
+            <div className="campo">
+              <label>Programa</label>
+              <select className="input" value={form.programa} onChange={(e) => setForm((f) => ({ ...f, programa: e.target.value }))} required>
+                <option value="">Selecione…</option>
+                {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+              </select>
+            </div>
+            <div className="campo">
+              <label>Data de emissão <span className="dica">(pode ser retroativa)</span></label>
+              <input className="input" type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} required />
+            </div>
           </div>
           <div className="grade-2">
             <div className="campo">
@@ -147,6 +157,7 @@ export function DetalheNotaServico() {
           <MetaCard icone="folder" titulo="Contrato" valor={nota.contrato} />
           <MetaCard icone="doc" titulo="Descrição" valor={nota.descricao} />
           <MetaCard icone="doc" titulo="Programa" valor={ROTULO_PROGRAMA[nota.programa] || '—'} />
+          <MetaCard icone="cal" titulo="Data de emissão" valor={fmtData(nota.dataEmissao)} />
         </div>
       )}
 
@@ -211,7 +222,7 @@ export function DetalheNotaServico() {
             <div className="tl-acao">
               <span className="badge badge-grafite">Cadastro</span>
             </div>
-            <div className="tl-meta">{nota.autor?.nome} · Nota cadastrada em {fmtDataHora(nota.criadoEm)}</div>
+            <div className="tl-meta">{nota.autor?.nome} · Emitida em {fmtData(nota.dataEmissao)} · Registrada em {fmtDataHora(nota.criadoEm)}</div>
           </li>
         </ul>
       </div>
@@ -222,6 +233,7 @@ export function DetalheNotaServico() {
 const META_ICONES = {
   doc: ['M6 3h9l3 3v15H6z', 'M15 3v3h3'],
   folder: ['M4 6h6l2 2h8v11H4z'],
+  cal: ['M4 5h16v15H4z', 'M4 9h16', 'M8 3v4', 'M16 3v4'],
 };
 function MetaCard({ icone, titulo, valor }) {
   return (

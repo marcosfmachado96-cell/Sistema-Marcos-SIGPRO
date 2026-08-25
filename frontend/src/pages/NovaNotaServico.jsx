@@ -9,7 +9,11 @@ const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: '
 export function NovaNotaServico() {
   const navigate = useNavigate();
   const [rodovias, setRodovias] = useState([]);
-  const [form, setForm] = useState({ numero: '', contrato: '', descricao: '', programa: '', rodovia: '', kmInicial: '', kmFinal: '' });
+  const [form, setForm] = useState({
+    numero: '', contrato: '', descricao: '', programa: '',
+    dataEmissao: new Date().toISOString().slice(0, 10),
+    rodovia: '', kmInicial: '', kmFinal: '',
+  });
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -66,12 +70,18 @@ export function NovaNotaServico() {
             <input className="input" value={form.descricao} onChange={(e) => set('descricao', e.target.value)}
               placeholder="Ex.: Recomposição de revestimento primário…" required />
           </div>
-          <div className="campo" style={{ maxWidth: 260 }}>
-            <label>Programa</label>
-            <select className="input" value={form.programa} onChange={(e) => set('programa', e.target.value)} required>
-              <option value="">Selecione…</option>
-              {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
-            </select>
+          <div className="grade-2">
+            <div className="campo">
+              <label>Programa</label>
+              <select className="input" value={form.programa} onChange={(e) => set('programa', e.target.value)} required>
+                <option value="">Selecione…</option>
+                {Object.entries(ROTULO_PROGRAMA).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+              </select>
+            </div>
+            <div className="campo">
+              <label>Data de emissão <span className="dica">(pode ser retroativa)</span></label>
+              <input className="input" type="date" value={form.dataEmissao} onChange={(e) => set('dataEmissao', e.target.value)} required />
+            </div>
           </div>
 
           <h3 style={{ margin: '16px 0' }}>Localização</h3>

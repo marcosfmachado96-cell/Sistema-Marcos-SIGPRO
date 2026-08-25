@@ -31,12 +31,16 @@ function exigirAutor(nota, ator) {
 }
 
 async function criar(dados, ator) {
-  const { numero, contrato, descricao, programa } = dados;
+  const { numero, contrato, descricao, programa, dataEmissao } = dados;
   if (!numero?.trim() || !contrato?.trim() || !descricao?.trim()) {
     const e = new Error('Informe número, contrato e descrição.'); e.status = 400; throw e;
   }
   if (!PROGRAMAS.includes(programa)) {
     const e = new Error('Informe o programa (PROMAC, PROSEG ou Não Pavimentada).'); e.status = 400; throw e;
+  }
+  const dataEmissaoParsed = dataEmissao ? new Date(dataEmissao) : null;
+  if (!dataEmissaoParsed || isNaN(dataEmissaoParsed)) {
+    const e = new Error('Informe a data de emissão da nota.'); e.status = 400; throw e;
   }
   const rodovia = Number(dados.rodovia);
   const kmInicial = Number(dados.kmInicial);
@@ -55,6 +59,7 @@ async function criar(dados, ator) {
   return prisma.notaServico.create({
     data: {
       numero: numero.trim(), contrato: contrato.trim(), descricao: descricao.trim(), programa,
+      dataEmissao: dataEmissaoParsed,
       rodovia, kmInicial, kmFinal,
       latitude: ponto.lat, longitude: ponto.lng,
       autorId: ator.id,
@@ -106,6 +111,13 @@ async function atualizar(id, dados, ator) {
       const e = new Error('Programa inválido.'); e.status = 400; throw e;
     }
     data.programa = dados.programa;
+  }
+  if (dados.dataEmissao != null) {
+    const dataEmissaoParsed = new Date(dados.dataEmissao);
+    if (isNaN(dataEmissaoParsed)) {
+      const e = new Error('Data de emissão inválida.'); e.status = 400; throw e;
+    }
+    data.dataEmissao = dataEmissaoParsed;
   }
 
   // Se rodovia/km mudar, recalcula o ponto no mapa.
