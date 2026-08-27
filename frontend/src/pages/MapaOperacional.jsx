@@ -159,13 +159,23 @@ export function MapaOperacional() {
 
   const notasFiltradas = useMemo(() => {
     return (notas || []).filter((n) => {
+      const status = statusNota(n).rotulo;
+      // Por padrão, notas concluídas ficam ocultas para poupar espaço na lista/mapa —
+      // só aparecem se o usuário marcar "Concluída" explicitamente no filtro de Status.
+      if (status === 'Concluída' && !filtroStatus.includes('Concluída')) return false;
       if (filtroContrato.length > 0 && !filtroContrato.includes(n.contrato)) return false;
       if (filtroRodovia.length > 0 && !filtroRodovia.includes(String(n.rodovia))) return false;
-      if (filtroStatus.length > 0 && !filtroStatus.includes(statusNota(n).rotulo)) return false;
+      if (filtroStatus.length > 0 && !filtroStatus.includes(status)) return false;
       if (filtroPrograma.length > 0 && !filtroPrograma.includes(n.programa)) return false;
       return true;
     });
   }, [notas, filtroContrato, filtroRodovia, filtroStatus, filtroPrograma]);
+
+  const concluidasOcultas = useMemo(
+    () => (notas || []).filter((n) => statusNota(n).rotulo === 'Concluída').length,
+    [notas],
+  );
+  const escondendoConcluidas = concluidasOcultas > 0 && !filtroStatus.includes('Concluída');
 
   // Inicializa o mapa e a camada de fundo da malha rodoviária — uma única vez.
   useEffect(() => {
@@ -282,6 +292,11 @@ export function MapaOperacional() {
 
       <div className="card card-pad mapa-lista">
         <h3>Notas de serviço {notas ? `(${notasFiltradas.length})` : ''}</h3>
+        {escondendoConcluidas && (
+          <p className="descricao" style={{ marginTop: 4, marginBottom: 12 }}>
+            {concluidasOcultas} nota(s) concluída(s) oculta(s) por padrão — marque "Concluída" no filtro de Status para exibi-las.
+          </p>
+        )}
 
         <div className="mapa-filtros">
           <div className="campo">
