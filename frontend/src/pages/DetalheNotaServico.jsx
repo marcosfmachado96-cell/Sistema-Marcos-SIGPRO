@@ -6,10 +6,12 @@ import { fmtData, fmtDataHora, fmtRodovia } from '../util';
 import { CampoContrato } from '../components/CampoContrato';
 
 const ROTULO_TIPO = {
+  AGUARDANDO_INICIO: 'Aguardando início',
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
   PARALISACAO: 'Paralisação', RETOMADA: 'Retomada', ANDAMENTO: 'Em execução', CONCLUIDA: 'Concluída',
 };
 const BADGE_TIPO = {
+  AGUARDANDO_INICIO: 'badge-grafite',
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
   PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
@@ -206,7 +208,7 @@ export function DetalheNotaServico() {
                 <span className={`badge ${BADGE_TIPO[ev.tipo] || 'badge-azul'}`}>{ROTULO_TIPO[ev.tipo] || ev.tipo}</span>
               </div>
               <div className="tl-meta">{ev.autor?.nome} · Ocorrido em {fmtData(ev.data)} · Registrado em {fmtDataHora(ev.criadoEm)}</div>
-              {ev.texto && <div style={{ marginTop: 4 }}>{ev.texto}</div>}
+              {ev.texto && <div style={{ marginTop: 6 }}><b>Observação:</b> {ev.texto}</div>}
               {(ev.anexos || []).length > 0 && (
                 <ul className="lista-anexos" style={{ marginTop: 6 }}>
                   {ev.anexos.map((a) => (

@@ -13,7 +13,7 @@ function limparNome(s) {
     .replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-const TIPOS_EVENTO = ['MOBILIZACAO', 'DESMOBILIZACAO', 'OCORRENCIA', 'PARALISACAO', 'RETOMADA', 'ANDAMENTO', 'CONCLUIDA'];
+const TIPOS_EVENTO = ['AGUARDANDO_INICIO', 'MOBILIZACAO', 'DESMOBILIZACAO', 'OCORRENCIA', 'PARALISACAO', 'RETOMADA', 'ANDAMENTO', 'CONCLUIDA'];
 const PROGRAMAS = ['PROMAC', 'PROSEG', 'NAO_PAVIMENTADA'];
 
 async function obterNota(id) {

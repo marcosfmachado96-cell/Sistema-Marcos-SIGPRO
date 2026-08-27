@@ -10,14 +10,17 @@ import { MultiSelect } from '../components/MultiSelect';
 const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: 'Não Pavimentada' };
 
 const ROTULO_EVENTO = {
+  AGUARDANDO_INICIO: 'Aguardando início',
   MOBILIZACAO: 'Mobilizado', DESMOBILIZACAO: 'Desmobilizado', OCORRENCIA: 'Ocorrência',
   PARALISACAO: 'Paralisado', RETOMADA: 'Em execução', ANDAMENTO: 'Em execução', CONCLUIDA: 'Concluída',
 };
 const COR_EVENTO = {
+  AGUARDANDO_INICIO: '#5b6472',
   MOBILIZACAO: '#2e6da4', DESMOBILIZACAO: '#5b6472', OCORRENCIA: '#b9821f',
   PARALISACAO: '#b4452f', RETOMADA: '#2e7d5b', ANDAMENTO: '#2e7d5b', CONCLUIDA: '#161a20',
 };
 const BADGE_EVENTO = {
+  AGUARDANDO_INICIO: 'badge-grafite',
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
   PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };

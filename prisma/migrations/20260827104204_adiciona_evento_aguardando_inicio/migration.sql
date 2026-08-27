@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TipoEventoNota" ADD VALUE 'AGUARDANDO_INICIO';

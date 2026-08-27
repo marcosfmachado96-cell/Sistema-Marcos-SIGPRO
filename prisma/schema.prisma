@@ -409,6 +409,7 @@ model LogAuditoria {
 // ----------------------------------------------------------------------------
 
 enum TipoEventoNota {
+  AGUARDANDO_INICIO
   MOBILIZACAO
   DESMOBILIZACAO
   OCORRENCIA
