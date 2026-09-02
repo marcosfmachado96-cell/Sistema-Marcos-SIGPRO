@@ -8,11 +8,13 @@ import { CampoContrato } from '../components/CampoContrato';
 const ROTULO_TIPO = {
   AGUARDANDO_INICIO: 'Aguardando início',
   MOBILIZACAO: 'Mobilização', DESMOBILIZACAO: 'Desmobilização', OCORRENCIA: 'Ocorrência',
+  NOTIFICACAO_EXTRAJUDICIAL: 'Notificação Extrajudicial',
   PARALISACAO: 'Paralisação', RETOMADA: 'Retomada', ANDAMENTO: 'Em execução', CONCLUIDA: 'Concluída',
 };
 const BADGE_TIPO = {
   AGUARDANDO_INICIO: 'badge-grafite',
   MOBILIZACAO: 'badge-azul', DESMOBILIZACAO: 'badge-grafite', OCORRENCIA: 'badge-ambar',
+  NOTIFICACAO_EXTRAJUDICIAL: 'badge-vermelho',
   PARALISACAO: 'badge-vermelho', RETOMADA: 'badge-verde', ANDAMENTO: 'badge-verde', CONCLUIDA: 'badge-grafite',
 };
 const ROTULO_PROGRAMA = { PROMAC: 'PROMAC', PROSEG: 'PROSEG', NAO_PAVIMENTADA: 'Não Pavimentada' };
