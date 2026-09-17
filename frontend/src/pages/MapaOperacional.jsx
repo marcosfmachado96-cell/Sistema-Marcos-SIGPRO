@@ -184,12 +184,11 @@ export function MapaOperacional() {
   useEffect(() => {
     if (mapaRef.current || !containerRef.current) return;
     const mapa = L.map(containerRef.current).setView([-24.7, -51.5], 7);
-    // Os servidores brutos do OSM (tile.openstreetmap.org) passaram a bloquear
-    // este app por política de uso (403 "Access blocked"). CARTO oferece o
-    // mesmo mapa-base a partir dos dados do OSM, liberado para esse tipo de uso.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
-      subdomains: 'abcd',
+    // Os tiles brutos do OSM (tile.openstreetmap.org) passaram a bloquear este
+    // app por política de uso (403), e os da CARTO agora exigem API key. O
+    // serviço público da Esri (World Street Map) não exige chave.
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri — Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(mapa);
     mapaRef.current = mapa;
