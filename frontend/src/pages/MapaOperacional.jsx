@@ -184,8 +184,12 @@ export function MapaOperacional() {
   useEffect(() => {
     if (mapaRef.current || !containerRef.current) return;
     const mapa = L.map(containerRef.current).setView([-24.7, -51.5], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
+    // Os servidores brutos do OSM (tile.openstreetmap.org) passaram a bloquear
+    // este app por política de uso (403 "Access blocked"). CARTO oferece o
+    // mesmo mapa-base a partir dos dados do OSM, liberado para esse tipo de uso.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO',
+      subdomains: 'abcd',
       maxZoom: 19,
     }).addTo(mapa);
     mapaRef.current = mapa;
