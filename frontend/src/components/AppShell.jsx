@@ -18,6 +18,7 @@ const ICONES = {
   solicitacoes: ['M4 5h16v10H8l-4 4z'],
   dosagem: ['M9 3h6', 'M10 3v6l-5 10a1 1 0 001 1.5h12a1 1 0 001-1.5L14 9V3'],
   mapa: ['M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z', 'M9 4v14', 'M15 6v14'],
+  equipes: ['M9 11a3 3 0 100-6 3 3 0 000 6z', 'M3 20a6 6 0 0112 0', 'M16 11a2.5 2.5 0 100-5', 'M17 14a5 5 0 014 5'],
 };
 
 export function AppShell({ children }) {
@@ -59,6 +60,7 @@ export function AppShell({ children }) {
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
               <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Projeto de Dosagem</NavLink>
               <NavLink to="/mapa-operacional" className={linkCls}><Icone d={ICONES.mapa} /> Mapa Operacional</NavLink>
+              <NavLink to="/equipes" className={linkCls}><Icone d={ICONES.equipes} /> Equipe Adm. Local</NavLink>
             </>
           ) : (
             <>
@@ -66,6 +68,7 @@ export function AppShell({ children }) {
               <NavLink to="/solicitacoes" className={linkCls}><Icone d={ICONES.solicitacoes} /> Solicitações</NavLink>
               <NavLink to="/dosagem" className={linkCls}><Icone d={ICONES.dosagem} /> Projeto de Dosagem</NavLink>
               <NavLink to="/mapa-operacional" className={linkCls}><Icone d={ICONES.mapa} /> Mapa Operacional</NavLink>
+              <NavLink to="/equipes" className={linkCls}><Icone d={ICONES.equipes} /> Equipe Adm. Local</NavLink>
             </>
           )}
         </nav>

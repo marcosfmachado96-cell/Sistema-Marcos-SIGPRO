@@ -17,6 +17,9 @@ import { DetalheDosagem } from './pages/DetalheDosagem';
 import { MapaOperacional } from './pages/MapaOperacional';
 import { NovaNotaServico } from './pages/NovaNotaServico';
 import { DetalheNotaServico } from './pages/DetalheNotaServico';
+import { EquipesContrato } from './pages/EquipesContrato';
+import { NovaEquipeContrato } from './pages/NovaEquipeContrato';
+import { DetalheEquipeContrato } from './pages/DetalheEquipeContrato';
 
 // Exige sessão; opcionalmente restringe a um perfil.
 function Protegido({ children, perfil }) {
@@ -69,6 +72,11 @@ export default function App() {
           <Route path="/mapa-operacional" element={<Protegido><MapaOperacional /></Protegido>} />
           <Route path="/mapa-operacional/novo" element={<Protegido><NovaNotaServico /></Protegido>} />
           <Route path="/mapa-operacional/:id" element={<Protegido><DetalheNotaServico /></Protegido>} />
+
+          {/* Equipe de administração local — visão compartilhada para conferir sobreposição de profissionais */}
+          <Route path="/equipes" element={<Protegido><EquipesContrato /></Protegido>} />
+          <Route path="/equipes/novo" element={<Protegido><NovaEquipeContrato /></Protegido>} />
+          <Route path="/equipes/:id" element={<Protegido><DetalheEquipeContrato /></Protegido>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

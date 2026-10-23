@@ -141,6 +141,19 @@ export const api = {
   detalharNotaServico: (id) => req('GET', `/notas-servico/${id}`),
   atualizarNotaServico: (id, dados) => req('PATCH', `/notas-servico/${id}`, dados),
   excluirNotaServico: (id) => req('DELETE', `/notas-servico/${id}`),
+
+  // Equipe de administração local — contratos, equipe e alterações de prazo
+  listarEquipes: () => req('GET', '/equipes-contrato'),
+  sobreposicoesEquipes: () => req('GET', '/equipes-contrato/sobreposicoes'),
+  criarEquipe: (dados) => req('POST', '/equipes-contrato', dados),
+  detalharEquipe: (id) => req('GET', `/equipes-contrato/${id}`),
+  atualizarEquipe: (id, dados) => req('PATCH', `/equipes-contrato/${id}`, dados),
+  excluirEquipe: (id) => req('DELETE', `/equipes-contrato/${id}`),
+  adicionarMembroEquipe: (id, dados) => req('POST', `/equipes-contrato/${id}/membros`, dados),
+  atualizarMembroEquipe: (membroId, dados) => req('PATCH', `/equipes-contrato/membros/${membroId}`, dados),
+  removerMembroEquipe: (membroId) => req('DELETE', `/equipes-contrato/membros/${membroId}`),
+  adicionarAlteracaoPrazo: (id, dados) => req('POST', `/equipes-contrato/${id}/alteracoes`, dados),
+  removerAlteracaoPrazo: (alteracaoId) => req('DELETE', `/equipes-contrato/alteracoes/${alteracaoId}`),
   adicionarEventoNota: (id, dados) => req('POST', `/notas-servico/${id}/eventos`, dados),
   anexarEventoNota: (eventoId, arquivos) =>
     req('POST', `/notas-servico/eventos/${eventoId}/anexos`, formData({ arquivos }), true),

@@ -9,6 +9,7 @@ const anexos = require('../controllers/anexos.controller');
 const solicitacoes = require('../controllers/solicitacoes.controller');
 const dosagem = require('../controllers/dosagem.controller');
 const notaServico = require('../controllers/notaServico.controller');
+const equipeContrato = require('../controllers/equipeContrato.controller');
 
 const router = Router();
 
@@ -74,5 +75,18 @@ router.delete('/notas-servico/:id', autenticar, notaServico.excluir);
 router.post('/notas-servico/:id/eventos', autenticar, notaServico.adicionarEvento);
 router.post('/notas-servico/eventos/:eventoId/anexos', autenticar, uploadEvento.array('arquivos'), notaServico.anexarEvento);
 router.get('/notas-servico/anexos/:id/download', autenticar, notaServico.download);
+
+// --- Equipe de administração local (visão compartilhada; edita o autor ou o coordenador) ---
+router.get('/equipes-contrato', autenticar, equipeContrato.listar);
+router.post('/equipes-contrato', autenticar, equipeContrato.criar);
+router.get('/equipes-contrato/sobreposicoes', autenticar, equipeContrato.sobreposicoes);
+router.patch('/equipes-contrato/membros/:membroId', autenticar, equipeContrato.atualizarMembro);
+router.delete('/equipes-contrato/membros/:membroId', autenticar, equipeContrato.removerMembro);
+router.delete('/equipes-contrato/alteracoes/:alteracaoId', autenticar, equipeContrato.removerAlteracao);
+router.get('/equipes-contrato/:id', autenticar, equipeContrato.detalhar);
+router.patch('/equipes-contrato/:id', autenticar, equipeContrato.atualizar);
+router.delete('/equipes-contrato/:id', autenticar, equipeContrato.excluir);
+router.post('/equipes-contrato/:id/membros', autenticar, equipeContrato.adicionarMembro);
+router.post('/equipes-contrato/:id/alteracoes', autenticar, equipeContrato.adicionarAlteracao);
 
 module.exports = router;
